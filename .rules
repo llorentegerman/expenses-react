@@ -1,0 +1,33 @@
+{
+    "rules": {
+      	"sheets": {
+            "$sheet_id": {
+                ".read": "auth.uid !== null && root.child('authorization/'+$sheet_id+'/'+auth.uid+'/role').exists() && (root.child('authorization/'+$sheet_id+'/'+auth.uid+'/role').val() === 'admin' || root.child('authorization/'+$sheet_id+'/'+auth.uid+'/role').val() === 'writer' || root.child('authorization/'+$sheet_id+'/'+auth.uid+'/role').val() === 'reader')",
+                ".write": "auth.uid !== null && (!data.exists() || root.child('authorization/'+$sheet_id+'/'+auth.uid+'/role').exists() && (root.child('authorization/'+$sheet_id+'/'+auth.uid+'/role').val() === 'admin' || root.child('authorization/'+$sheet_id+'/'+auth.uid+'/role').val() === 'writer'))",
+                ".validate": "newData.hasChildren(['id','expenses', 'name', 'metadata' ]) && newData.child('metadata').hasChildren(['categories', 'currencies', 'tags', 'methods', 'cities'])",
+                "expenses": {
+                  	"$expense_id": {
+                    	".validate": "!data.exists() || newData.hasChildren(['amount', 'category', 'city', 'currency', 'date', 'description', 'method', 'tags'])",
+                      ".indexOn": ["date"]
+                    }
+                }
+
+            }
+        },
+        "authorization": {
+          	"$sheet_id": {
+          		".read": "auth.uid !== null && data.child(auth.uid+'/role').exists() && data.child(auth.uid+'/role').val() === 'admin'",
+            	".write": "auth.uid !== null && ((!data.exists() && root.child('sheets/'+$sheet_id).exists()) || (data.child(auth.uid+'/role').exists() && data.child(auth.uid+'/role').val() === 'admin'))",
+                "$user_id": {
+                    ".validate": "newData.hasChildren(['role']) && (newData.child('role').val() === 'admin' || newData.child('role').val() === 'reader' || newData.child('role').val() === 'writer')"
+                }
+            }
+        },
+        "users": {
+            "$user_id": {
+                ".write": "$user_id === auth.uid",
+              	".read": "$user_id === auth.uid"
+            }
+        }
+    }
+}
