@@ -9,7 +9,7 @@ import ReactTags from 'react-tag-autocomplete';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useExpenses } from '../../commons/useExpenses';
 import { LoadingComponent } from '../../commons/InitializingComponent';
-import DragNDropFileComponent from '../../commons/ImageUpload';
+import ImageUploadComponent from '../../commons/ImageUpload';
 import '../../commons/styles/tags.css';
 
 const styles = StyleSheet.create({
@@ -111,6 +111,7 @@ function AddExpenseComponent() {
     const [initializingMethods, setInitializingMethods] = useState(true);
 
     const [files, setFiles] = useState([]);
+    const [filesChanged, setFilesChanged] = useState(0);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -597,9 +598,13 @@ function AddExpenseComponent() {
 
                     {isFeatureEnabled(sheet.metadata, 'files') &&
                         (!editMode || (editMode && defaultExpense)) && (
-                            <DragNDropFileComponent
-                                onChange={newFiles => setFiles(newFiles)}
+                            <ImageUploadComponent
+                                onChange={newFiles => {
+                                    setFilesChanged(filesChanged + 1);
+                                    return setFiles(newFiles);
+                                }}
                                 files={files}
+                                filesChanged={filesChanged}
                                 hasFiles={
                                     !editMode
                                         ? false

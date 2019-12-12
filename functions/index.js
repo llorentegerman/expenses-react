@@ -2,6 +2,7 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const moment = require('moment');
 const { resizeImage } = require('./src/resizeImage');
+const { rotateImage } = require('./src/rotateImage');
 
 admin.initializeApp();
 
@@ -364,3 +365,5 @@ exports.removeOldFiles = functions.database
     });
 
 exports.resizeImage = resizeImage(admin);
+
+exports.rotateImage = rotateImage(admin);

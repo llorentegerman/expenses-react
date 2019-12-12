@@ -1,32 +1,37 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import ImageUploader from 'react-images-upload';
 import { Column } from 'simple-flexbox';
 import { StyleSheet, css } from 'aphrodite';
 import Gallery from 'react-photo-gallery';
 import Carousel, { Modal, ModalGateway } from 'react-images';
+import IconExport from '../assets/icon-export';
 import IconRemove from '../assets/icon-remove';
+import IconRotate from '../assets/icon-rotate';
 import { LoadingComponent } from './InitializingComponent';
+
+const maxFilesCount = 3;
 
 const styles = StyleSheet.create({
     photoContainer: {
         cursor: 'pointer',
         margin: 2,
+        maxHeight: 256,
+        maxWidth: 256,
         position: 'relative'
     },
-    removeButton: {
+    imgButton: {
+        alignItems: 'center',
         borderRadius: 50,
-        position: 'absolute',
-        padding: 3,
-        top: 5,
-        right: 5,
         cursor: 'pointer',
         display: 'flex',
-        alignItems: 'center',
         opacity: 0.8,
+        padding: 3,
+        position: 'absolute',
+        zIndex: 1,
         ':hover': {
-            opacity: 0.5,
+            backgroundColor: 'white',
             borderRadius: '4px',
-            backgroundColor: 'white'
+            opacity: 0.5
         }
     },
     uploaderContainer: {
@@ -43,7 +48,9 @@ function DragNDropFileComponent({ files = [], onChange, hasFiles }) {
     const [currentImage, setCurrentImage] = useState(0);
     const [viewerIsOpen, setViewerIsOpen] = useState(false);
 
-    const openLightbox = useCallback((event, { photo, index }) => {
+    const refUploadContainer = useRef();
+
+    const openLightbox = useCallback((_, { index }) => {
         setCurrentImage(index);
         setViewerIsOpen(true);
     }, []);
@@ -53,15 +60,22 @@ function DragNDropFileComponent({ files = [], onChange, hasFiles }) {
         setViewerIsOpen(false);
     };
 
-    const onDrop = (pictureFiles, pictureDataURLs) => {
-        pictureFiles = [...files, ...pictureFiles];
-        if (pictureFiles.length > 2) {
-            pictureFiles = pictureFiles.slice(-2);
+    const onDrop = pictureFiles => {
+        let newFiles = [];
+        for (let i = 0; i < pictureFiles.length; i++) {
+            const fileName = pictureFiles[i].name;
+            if (files.findIndex(f => f.name === fileName) < 0) {
+                newFiles.push(pictureFiles[i]);
+            }
         }
-        onChange && onChange(pictureFiles);
+        newFiles = [...files, ...newFiles];
+        if (newFiles.length > maxFilesCount) {
+            newFiles = newFiles.slice(-maxFilesCount);
+        }
+        onChange && onChange(newFiles);
     };
 
-    const photos = files.map((file, index) => {
+    const photos = files.map(file => {
         const src = file.url || URL.createObjectURL(file);
         let thumb = src;
         if (file.url) {
@@ -71,16 +85,30 @@ function DragNDropFileComponent({ files = [], onChange, hasFiles }) {
             src,
             thumb,
             width: 1,
-            height: 1
+            height: 1,
+            rotate: file.rotate || 0,
+            name: file.name
         };
     });
 
-    const removeFile = src => {
-        const filteredFiles = files.filter(f => f.url && f.url !== src);
+    const removeFile = (src, name) => {
+        const filteredFiles = files.filter(
+            f => (f.url && f.url !== src) || (!f.url && f.name !== name)
+        );
+
+        refUploadContainer.current.state.files = refUploadContainer.current.state.files.filter(
+            f => (f.url && f.url !== src) || (!f.url && f.name !== name)
+        );
         onChange && onChange(filteredFiles);
     };
 
-    const imageRenderer = ({ index, photo, onClick, ...others }) => {
+    const rotateImage = src => {
+        const fileIndex = files.findIndex(f => f.url && f.url === src);
+        files[fileIndex].rotate = (files[fileIndex].rotate || 0) - 90;
+        onChange && onChange(files);
+    };
+
+    const imageRenderer = ({ index, photo, onClick }) => {
         return (
             <div
                 key={`image-${index}`}
@@ -92,9 +120,24 @@ function DragNDropFileComponent({ files = [], onChange, hasFiles }) {
             >
                 <IconRemove
                     width={40}
-                    className={css(styles.removeButton)}
+                    className={css(styles.imgButton)}
+                    style={{ top: 5, right: 5 }}
                     color="red"
-                    onClick={() => removeFile(photo.src)}
+                    onClick={() => removeFile(photo.src, photo.name)}
+                />
+                <IconRotate
+                    width={40}
+                    className={css(styles.imgButton)}
+                    style={{ top: 5, left: 5 }}
+                    color="red"
+                    onClick={() => rotateImage(photo.src)}
+                />
+                <IconExport
+                    width={40}
+                    className={css(styles.imgButton)}
+                    style={{ bottom: 5, left: 5 }}
+                    color="red"
+                    onClick={() => window.open(photo.src, '_blank')}
                 />
                 <img
                     alt={photo.title}
@@ -103,6 +146,11 @@ function DragNDropFileComponent({ files = [], onChange, hasFiles }) {
                     onError={e => (e.target.src = photo.src)}
                     onClick={e => onClick(e, { index })}
                     onLoad={() => setLoadingImages(false)}
+                    style={{
+                        transform: `rotate(${photo.rotate || 0}deg)`,
+                        maxHeight: 256,
+                        maxWidth: 256
+                    }}
                 />
             </div>
         );
@@ -114,10 +162,11 @@ function DragNDropFileComponent({ files = [], onChange, hasFiles }) {
                 <ImageUploader
                     withIcon={true}
                     buttonText="Subir imagenes"
-                    label="Maximo 2 archivos. Tamaño maximo: 5mb"
+                    label={`Maximo ${maxFilesCount} archivos. Tamaño maximo: 5mb`}
                     onChange={onDrop}
                     imgExtension={['.jpg', '.gif', '.png', '.gif', '.jpeg']}
                     maxFileSize={5242880}
+                    ref={refUploadContainer}
                 />
             </Column>
             <LoadingComponent loading={loadingImages}>

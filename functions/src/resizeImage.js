@@ -18,7 +18,7 @@ exports.resizeImage = admin =>
         const metadata = await fileRef.getMetadata();
 
         const workingDir = join(tmpdir(), 'thumbs');
-        const tmpFilePath = join(workingDir, 'source.png');
+        const tmpFilePath = join(workingDir, `${new Date().getTime()}.png`);
 
         if (
             fileName.includes('thumb_') ||

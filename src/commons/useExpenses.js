@@ -229,6 +229,9 @@ function useProvideExpenses() {
             for (let i = 0; i < files.length; i++) {
                 if (files[i].url) {
                     newExpense.files.push({ url: files[i].path });
+                    if (files[i].rotate) {
+                        await rotateImage(files[i].path, files[i].rotate);
+                    }
                     continue;
                 }
                 const extension = files[i].name.split('.').pop();
@@ -502,6 +505,11 @@ function useProvideExpenses() {
         setloading_logout(true);
         await firebase.auth().signOut();
         setloading_logout(false);
+    };
+
+    const rotateImage = async (path, angle) => {
+        const addMessage = firebase.functions().httpsCallable('rotateImage');
+        return addMessage({ path, angle });
     };
 
     return {
