@@ -8,11 +8,24 @@ const styles = StyleSheet.create({
         height: '100vh',
         width: '100vw'
     },
-    containerLoading: {
+    containerLoadingFS: {
         backgroundColor: 'rgba(0,0,0,.5)',
         height: '100%',
         minHeight: '100vh',
         width: 'calc(100% - 0px)',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        zIndex: 1000,
+        '@media (max-width: 1080px)': {
+            width: 'calc(100% - 0px)'
+        }
+    },
+    containerLoading: {
+        backgroundColor: 'rgba(0,0,0,.5)',
+        height: '100%',
+        minHeight: 210,
+        width: '100%',
         position: 'absolute',
         top: 0,
         left: 0,
@@ -61,12 +74,16 @@ function InitializingComponent() {
     );
 }
 
-function LoadingComponent({ children, loading }) {
+function LoadingComponent({ children, loading, fullScreen }) {
     return (
-        <div>
+        <div style={{ position: 'relative' }}>
             {loading && (
                 <Column
-                    className={css(styles.containerLoading)}
+                    className={css(
+                        fullScreen
+                            ? styles.containerLoadingFS
+                            : styles.containerLoading
+                    )}
                     horizontal="center"
                     vertical="center"
                 >

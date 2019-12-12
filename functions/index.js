@@ -1,12 +1,15 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const moment = require('moment');
+const { resizeImage } = require('./src/resizeImage');
 
 admin.initializeApp();
 
 exports.updateStatics = functions.database
     .ref('/sheets/{sheetId}/expenses/{expenseId}')
     .onWrite(async (snapshot, context) => {
+        const { sheetId, expenseId } = context.params;
+        console.log('sheetId', sheetId, 'expenseId', expenseId);
         const snapshotDB = await admin
             .database()
             .ref(`/sheets/${context.params.sheetId}`)
@@ -337,5 +340,27 @@ exports.updateSheetName = functions.database
             .update(updates);
     });
 
-// firebase functions:delete makeUppercase --force
-// firebase deploy --only functions
+exports.removeOldFiles = functions.database
+    .ref('/sheets/{sheetId}/expenses/{expenseId}/files')
+    .onWrite(async (snapshot, context) => {
+        const { sheetId, expenseId } = context.params;
+        const files = snapshot.after.val() || [];
+        const bucket = admin.storage().bucket();
+        var fileList = await bucket.getFiles({
+            prefix: `${sheetId}/${expenseId}`
+        });
+
+        if (fileList.length > 0) {
+            for (let i = 0; i < fileList[0].length; i++) {
+                const itemRef = fileList[0][i];
+                const fullPath = itemRef.metadata.name.replace('thumb_', '');
+                if (files.findIndex(f => f.url === fullPath) < 0) {
+                    bucket.deleteFiles({
+                        prefix: itemRef.metadata.name
+                    });
+                }
+            }
+        }
+    });
+
+exports.resizeImage = resizeImage(admin);

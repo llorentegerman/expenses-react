@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
         width: 35,
         borderRadius: 50,
         marginLeft: 14,
-        border: '1px solid #DFE0EB',
+        border: '1px solid #DFE0EB'
     },
     container: {
         height: 40
@@ -56,10 +56,10 @@ const styles = StyleSheet.create({
         whiteSpace: 'nowrap',
         '@media (max-width: 1080px)': {
             marginLeft: 36,
-            maxWidth: '30%',
+            maxWidth: '30%'
         },
         '@media (max-width: 468px)': {
-            fontSize: 20,
+            fontSize: 20
         }
     },
     iconStyles: {
@@ -74,9 +74,9 @@ const styles = StyleSheet.create({
 function HeaderComponent(props) {
     const expenses = useExpenses();
     const { location } = useReactRouter();
-    
+
     useEffect(() => {
-        if(location.pathname.indexOf('/sheet/') === 0 && expenses.user) {
+        if (location.pathname.indexOf('/sheet/') === 0 && expenses.user) {
             const sheetId = location.pathname.split('/')[2];
             const sheet = expenses.user.sheets[sheetId];
             if (!sheet) {
@@ -86,24 +86,27 @@ function HeaderComponent(props) {
     }, [location, expenses, expenses.user]);
 
     if (!expenses.user) {
-        return <div></div>
+        return <div></div>;;
     }
 
     let title = location.pathname.split('/').pop();
-    if(location.pathname.indexOf('/sheet/') === 0) {
+    if (location.pathname.indexOf('/sheet/') === 0) {
         const sheetId = location.pathname.split('/')[2];
         const sheet = expenses.user.sheets[sheetId];
         if (sheet) {
             title = sheet.name;
-        }
-        else {
+        } else {
             title = '';
         }
-    
     }
-    title='';
+    title = '';
     return (
-        <Row className={css(styles.container)} vertical="center" horizontal="space-between" {...props}>
+        <Row
+            className={css(styles.container)}
+            vertical="center"
+            horizontal="space-between"
+            {...props}
+        >
             <span className={css(styles.title)}>{title}</span>
             <Row vertical="center">
                 <div className={css(styles.iconStyles)}>
@@ -114,8 +117,14 @@ function HeaderComponent(props) {
                 </div>
                 <div className={css(styles.separator)}></div>
                 <Row vertical="center">
-                    <span className={css(styles.name, styles.cursorPointer)}>{expenses.user.name}</span>
-                    <img src={expenses.user.photoUrl} alt="avatar" className={css(styles.avatar, styles.cursorPointer)} />
+                    <span className={css(styles.name, styles.cursorPointer)}>
+                        {expenses.user.name}
+                    </span>
+                    <img
+                        src={expenses.user.photoUrl}
+                        alt="avatar"
+                        className={css(styles.avatar, styles.cursorPointer)}
+                    />
                 </Row>
             </Row>
         </Row>

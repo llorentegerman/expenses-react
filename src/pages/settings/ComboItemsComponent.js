@@ -253,7 +253,10 @@ function ComboItemsComponent({ title, type }) {
         setItems(items.map((v, i) => (i === index ? newItem : v)));
 
     return (
-        <LoadingComponent loading={loading_getSheet || loading_setSection}>
+        <LoadingComponent
+            loading={loading_getSheet || loading_setSection}
+            fullScreen
+        >
             <Column>
                 <span className={css(styles.title)}>{title}</span>
                 <span className={css(styles.subtitle)}>

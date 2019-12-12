@@ -67,6 +67,17 @@ function useProvideExpenses() {
         };
     };
 
+    // useEffect(() => {
+    //     let newUser = null;
+    //     refreshUser('QjRiOvbUTpZFFaWLgM48UF5YPBG3').then(
+    //         async refreshResponse => {
+    //             newUser = refreshResponse.user;
+    //             setUser(newUser);
+    //             setInitializing(false);
+    //         }
+    //     );
+    // }, []);
+
     useEffect(() => {
         const listener = firebase
             .auth()
@@ -88,36 +99,23 @@ function useProvideExpenses() {
         try {
             setloading_getSheet(true);
 
-            const expensesRef = firebase
-                .database()
-                .ref(`/sheets/${sheetId}/expenses`);
+            const sheetRef = firebase.database().ref(`/sheets/${sheetId}`);
 
-            var metadataRef = firebase
-                .database()
-                .ref(`/sheets/${sheetId}/metadata`);
+            const snapshotSheetPromise = sheetRef.once('value');
 
-            const snapshotExpensesPromise = expensesRef
-                .orderByChild('date')
-                .once('value');
+            const snapshotSheet = await snapshotSheetPromise;
 
-            const snapshotMetadataPromise = metadataRef.once('value');
-
-            const snapshotExpenses = await snapshotExpensesPromise;
-            const snapshotMetadata = await snapshotMetadataPromise;
-
-            const expensesValue = snapshotExpenses.val();
-            const array = Object.keys(expensesValue || {}).map(
-                id => expensesValue[id]
+            const sheetValue = snapshotSheet.val();
+            const array = Object.keys(sheetValue.expenses || {}).map(
+                id => sheetValue.expenses[id]
             );
             const expenses = formatData(array);
 
-            const metadata = snapshotMetadata.val();
-
             setloading_getSheet(false);
             return {
+                ...sheetValue,
                 expenses,
-                expensesRaw: array,
-                metadata
+                expensesRaw: array
             };
         } catch (ex) {
             setloading_getSheet(false);
@@ -163,7 +161,11 @@ function useProvideExpenses() {
     const getMetadataRef = sheetId =>
         firebase.database().ref(`/sheets/${sheetId}/metadata`);
 
-    const upsertExpense = async (sheetId, item, metadata) => {
+    const upsertExpense = async (
+        sheetId,
+        { files = [], ...item },
+        metadata
+    ) => {
         setloading_upsertExpense(true);
         try {
             const newId =
@@ -173,7 +175,7 @@ function useProvideExpenses() {
                     .ref()
                     .child(`sheets/${sheetId}`)
                     .push().key;
-            const newExpense = { id: newId, ...item };
+            const newExpense = { id: newId, files: [], ...item };
             let tags = (newExpense.tags || '').split(',');
             tags = tags.map(t => t.trim()).filter(t => !!t);
             newExpense.tags = tags.join(',');
@@ -221,6 +223,25 @@ function useProvideExpenses() {
                 }
             });
 
+            // Create a root reference
+            var storageRef = firebase.storage().ref();
+
+            for (let i = 0; i < files.length; i++) {
+                if (files[i].url) {
+                    newExpense.files.push({ url: files[i].path });
+                    continue;
+                }
+                const extension = files[i].name.split('.').pop();
+                const filePath = `${sheetId}/${newId}/${new Date().getTime()}.${extension}`;
+                try {
+                    var fileRef = storageRef.child(filePath);
+                    await fileRef.put(files[i]);
+                    newExpense.files.push({ url: filePath });
+                } catch (e) {
+                    console.log('error', e.message);
+                }
+            }
+
             await firebase
                 .database()
                 .ref()
@@ -230,6 +251,19 @@ function useProvideExpenses() {
             setloading_upsertExpense(false);
             console.log('Error upsertExpense', ex.message);
             alert('Error Add Expense');
+        }
+    };
+
+    const getFile = async filePath => {
+        // Create a reference with an initial file path and name
+        try {
+            var storage = firebase.storage();
+            var pathReference = storage.ref(filePath);
+            const url = await pathReference.getDownloadURL();
+            return url;
+        } catch (e) {
+            console.log(e.message);
+            throw e;
         }
     };
 
@@ -270,7 +304,10 @@ function useProvideExpenses() {
                     expenses: '',
                     tags: '',
                     cities: '',
-                    statistics: ''
+                    statistics: '',
+                    features: {
+                        images: true
+                    }
                 }
             };
             await firebase
@@ -424,6 +461,9 @@ function useProvideExpenses() {
         }
     };
 
+    const isFeatureEnabled = (metadata, feature) =>
+        metadata && metadata.features && metadata.features[feature];
+
     const login = async () => {
         const authenticationResult = await firebase
             .auth()
@@ -485,6 +525,10 @@ function useProvideExpenses() {
         logout,
 
         setMetadata,
+
+        getFile,
+
+        isFeatureEnabled,
 
         loading:
             loading_upsertExpense ||

@@ -9,6 +9,7 @@ import ReactTags from 'react-tag-autocomplete';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useExpenses } from '../../commons/useExpenses';
 import { LoadingComponent } from '../../commons/InitializingComponent';
+import DragNDropFileComponent from '../../commons/ImageUpload';
 import '../../commons/styles/tags.css';
 
 const styles = StyleSheet.create({
@@ -29,7 +30,8 @@ const styles = StyleSheet.create({
         height: 40,
         fontSize: 16,
         marginTop: 4,
-        width: '100%'
+        width: '100%',
+        maxWidth: 500
     }
 });
 
@@ -79,8 +81,10 @@ const theme = {
 
 function AddExpenseComponent() {
     const {
+        getFile,
         getSheet,
         initializing,
+        isFeatureEnabled,
         loadings: { loading_getSheet, loading_upsertExpense },
         logout,
         upsertExpense,
@@ -94,6 +98,7 @@ function AddExpenseComponent() {
             date: new Date()
         }
     });
+
     const [sheet, setSheet] = useState();
     const [suggestionsCities, setSuggestionsCities] = useState([]);
     const [suggestionsCategories, setSuggestionsCategories] = useState([]);
@@ -104,6 +109,8 @@ function AddExpenseComponent() {
     const [initializingCategories, setInitializingCategories] = useState(true);
     const [initializingCurrencies, setInitializingCurrencies] = useState(true);
     const [initializingMethods, setInitializingMethods] = useState(true);
+
+    const [files, setFiles] = useState([]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -125,6 +132,31 @@ function AddExpenseComponent() {
     }, [match.params.sheetId]);
 
     useEffect(() => {
+        const loadFiles = async filteredExpense => {
+            const newFiles = [];
+            const expenseFiles = filteredExpense.files || [];
+            for (let i = 0; i < expenseFiles.length; i++) {
+                let url = expenseFiles[i].url;
+                try {
+                    url = await getFile(expenseFiles[i].url);
+                } catch (e) {}
+
+                const thumbFilename = `thumb_${expenseFiles[i].url.substring(
+                    expenseFiles[i].url.lastIndexOf('/') + 1
+                )}`;
+                const thumbFolder = `${expenseFiles[i].url.substring(
+                    0,
+                    expenseFiles[i].url.lastIndexOf('/') + 1
+                )}`;
+                let thumb = `${thumbFolder}${thumbFilename}`;
+                try {
+                    thumb = await getFile(`${thumbFolder}${thumbFilename}`);
+                } catch (e) {}
+                newFiles.push({ url, path: expenseFiles[i].url, thumb });
+            }
+            setFiles(newFiles);
+        };
+
         if (!initializing && !loading_getSheet && sheet) {
             const metadata = sheet.metadata;
             if (editMode) {
@@ -138,6 +170,9 @@ function AddExpenseComponent() {
                         ...filteredExpense,
                         date: new Date(+filteredExpense.date)
                     });
+                    if (isFeatureEnabled(metadata, 'files')) {
+                        loadFiles(filteredExpense);
+                    }
                 }
             } else if (metadata) {
                 const cities = Object.keys(metadata.cities || {});
@@ -194,7 +229,9 @@ function AddExpenseComponent() {
         match.params.expenseId,
         initializing,
         loading_getSheet,
-        sheet
+        sheet,
+        getFile,
+        isFeatureEnabled
     ]);
 
     useEffect(() => {
@@ -342,7 +379,7 @@ function AddExpenseComponent() {
         return <div></div>;
     }
 
-    const onSave = ({ date, ...data }) => {
+    const onSave = async ({ date, ...data }) => {
         const newData = {
             date: new Date(date).getTime(),
             ...data
@@ -350,7 +387,8 @@ function AddExpenseComponent() {
         if (editMode) {
             newData.id = match.params.expenseId;
         }
-        upsertExpense(match.params.sheetId, newData, sheet.metadata);
+        newData.files = files;
+        await upsertExpense(match.params.sheetId, newData, sheet.metadata);
         reset();
         history.push(`/sheet/${match.params.sheetId}`);
     };
@@ -370,7 +408,10 @@ function AddExpenseComponent() {
         .map(v => ({ id: v, name: v }));
 
     return (
-        <LoadingComponent loading={loading_getSheet || loading_upsertExpense}>
+        <LoadingComponent
+            loading={loading_getSheet || loading_upsertExpense}
+            fullScreen
+        >
             <Column style={{ padding: 25, marginTop: 5 }} horizontal="center">
                 <Column style={{ width: '100%', maxWidth: 500 }}>
                     <DatePicker
@@ -554,6 +595,19 @@ function AddExpenseComponent() {
                     />
                     {renderError('method')}
 
+                    {isFeatureEnabled(sheet.metadata, 'files') &&
+                        (!editMode || (editMode && defaultExpense)) && (
+                            <DragNDropFileComponent
+                                onChange={newFiles => setFiles(newFiles)}
+                                files={files}
+                                hasFiles={
+                                    !editMode
+                                        ? false
+                                        : (defaultExpense.files || []).length >
+                                          0
+                                }
+                            />
+                        )}
                     <Row
                         flexGrow={1}
                         style={{ marginTop: 20 }}

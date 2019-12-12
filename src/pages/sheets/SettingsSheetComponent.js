@@ -34,28 +34,46 @@ const styles = StyleSheet.create({
 
 function SettingsComponent(props) {
     const { history, match } = useReactRouter();
-    const expenses = useExpenses();
+    const {
+        user,
+        getSheet,
+        logout,
+        setMetadata,
+        setSheetId,
+        setSheetName
+    } = useExpenses();
 
     const { errors, handleSubmit, register, reset } = useForm();
 
     useEffect(() => window.scrollTo(0, 0), []);
 
     useEffect(() => {
-        if (match.params.sheetId && expenses.user) {
-            const sheet = expenses.user.sheets[match.params.sheetId];
+        if (match.params.sheetId && user) {
+            const getSheetFetch = async sheetId => {
+                const getSheetResponse = await getSheet(sheetId);
+                reset({
+                    name: getSheetResponse.name,
+                    files: (getSheetResponse.metadata.features || {}).files
+                });
+            };
+            const sheet = user.sheets[match.params.sheetId];
             if (!sheet) {
-                expenses.logout();
+                logout();
             } else {
                 if (match.params.sheetId !== sheet.id) {
-                    expenses.setSheetId(match.params.sheetId);
+                    setSheetId(match.params.sheetId);
                 }
-                reset({ name: sheet.name });
+                getSheetFetch(match.params.sheetId);
             }
         }
-    }, [match.params.sheetId, expenses, reset]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [match.params.sheetId]);
 
-    const onSave = async ({ name }) => {
-        expenses.setSheetName(match.params.sheetId, name);
+    const onSave = async ({ name, files }) => {
+        setSheetName(match.params.sheetId, name);
+        setMetadata(match.params.sheetId, 'features', {
+            files
+        });
         reset();
         history.push(`/sheet/${match.params.sheetId}`);
     };
@@ -81,6 +99,20 @@ function SettingsComponent(props) {
                         ref={register({ required: true })}
                         type="text"
                     />
+                </Row>
+                {renderError('date')}
+                <Row style={{ marginTop: 12 }}>
+                    <span className={css(styles.label)}>Features</span>
+                    <Column>
+                        <Row>
+                            <input
+                                name="files"
+                                ref={register}
+                                type="checkbox"
+                            />
+                            <span style={{ marginLeft: 4 }}>ARCHIVOS</span>
+                        </Row>
+                    </Column>
                 </Row>
                 {renderError('date')}
             </Column>

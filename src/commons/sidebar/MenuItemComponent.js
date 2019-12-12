@@ -1,27 +1,27 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { bool, func, string } from 'prop-types';
 import { Column, Row } from 'simple-flexbox';
 import { StyleSheet, css } from 'aphrodite';
 
 const styles = StyleSheet.create({
-    activeBar: {
-        height: 56,
-        width: 3,
-        backgroundColor: '#DDE2FF',
-        position: 'absolute',
-        left: 0
-    },
     activeContainer: {
         backgroundColor: 'rgba(221,226,255, 0.08)'
+    },
+    activeBar: {
+        borderLeft: '3px solid #DDE2FF'
     },
     activeTitle: {
         color: '#DDE2FF'
     },
     container: {
+        display: 'flex',
         height: 56,
         cursor: 'pointer',
         ':hover': {
             backgroundColor: 'rgba(221,226,255, 0.08)'
+        },
+        ':focus': {
+            outline: 'none'
         },
         paddingLeft: 32,
         paddingRight: 32
@@ -60,18 +60,18 @@ const styles = StyleSheet.create({
 });
 
 function SubItem(props, index) {
-    const { active, icon, title, ...otherProps } = props;
+    const { active, expanded, icon, title, ...otherProps } = props;
     return (
         <Row
             key={`subitem-${index}`}
             className={css(
                 styles.containerSubItem,
-                active && styles.activeContainer
+                active && styles.activeContainer,
+                styles.activeBar
             )}
             vertical="center"
             {...otherProps}
         >
-            <div className={css(styles.activeBar)}></div>
             {icon}
             <span className={css(styles.title, styles.activeTitle)}>
                 {title}
@@ -83,6 +83,7 @@ function SubItem(props, index) {
 function MenuItemComponent(props) {
     const {
         active,
+        expanded,
         icon,
         subItems = [],
         title,
@@ -90,23 +91,18 @@ function MenuItemComponent(props) {
         ...otherProps
     } = props;
     const Icon = icon;
-    const [expanded, setExpanded] = useState(true);
-    let onClickFunction = () => setExpanded(!expanded);
-    if (onClick) {
-        onClickFunction = onClick;
-    }
     return (
         <Column>
             <Row
-                className={css(
-                    styles.container,
-                    active && styles.activeContainer
-                )}
                 vertical="center"
-                onClick={onClick || onClickFunction}
+                onClick={onClick}
                 {...otherProps}
+                className={`${css(
+                    styles.container,
+                    active && styles.activeContainer,
+                    active && styles.activeBar
+                )}`}
             >
-                {active && <div className={css(styles.activeBar)}></div>}
                 <Icon
                     fill={active ? '#DDE2FF' : '#9FA2B4'}
                     opacity={!active && '0.4'}
@@ -117,16 +113,16 @@ function MenuItemComponent(props) {
                     {title}
                 </span>
             </Row>
-            {active && (
+            {
                 <Column
                     className={css(
                         styles.subItems,
                         !expanded && styles.subItemsHide
                     )}
                 >
-                    {subItems.map(SubItem)}
+                    {subItems.map((s, i) => SubItem({ ...s, expanded }, i))}
                 </Column>
-            )}
+            }
         </Column>
     );
 }

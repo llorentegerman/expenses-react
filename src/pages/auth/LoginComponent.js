@@ -55,7 +55,7 @@ function LoginComponent() {
         loadings: { loading_login }
     } = useExpenses();
     return (
-        <LoadingComponent loading={initializing || loading_login}>
+        <LoadingComponent loading={initializing || loading_login} fullScreen>
             <Column
                 horizontal="center"
                 vertical="center"

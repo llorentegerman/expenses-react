@@ -38,8 +38,8 @@ const styles = StyleSheet.create({
     sideColumns: {
         flexGrow: 1,
         width: '100%',
-        maxWidth: 280,
-        minWidth: 200,
+        maxWidth: 240,
+        minWidth: 220,
         '@media (max-width: 1080px)': {
             maxWidth: 880,
             marginTop: -10
@@ -205,7 +205,7 @@ function ExpensesComponent() {
         user && user.sheets && user.sheets[match.params.sheetId].name;
 
     return (
-        <LoadingComponent loading={loading_getSheet}>
+        <LoadingComponent loading={loading_getSheet} fullScreen>
             <Column horizontal="center">
                 <Row
                     style={{ width: '100%' }}
@@ -220,7 +220,7 @@ function ExpensesComponent() {
                     <span className={css(styles.sideColumns)}></span>
 
                     <Column
-                        style={{ maxWidth: 800, width: '100%' }}
+                        style={{ maxWidth: 880, width: '100%' }}
                         breakpoints={{
                             1080: { padding: '0px 10px', maxWidth: 880 }
                         }}
