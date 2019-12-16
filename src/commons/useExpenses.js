@@ -54,12 +54,15 @@ function useProvideExpenses() {
     const [loading_setSheetName, setloading_setSheetName] = useState(false);
 
     const [user, setUser] = useState(null);
+    const [isOnline, setIsOnline] = useState(true);
 
     const refreshUser = async userUID => {
-        const user = (await firebase
-            .database()
-            .ref(`/users/${userUID}`)
-            .once('value')).val();
+        const user = (
+            await firebase
+                .database()
+                .ref(`/users/${userUID}`)
+                .once('value')
+        ).val();
         user.uid = userUID;
 
         return {
@@ -90,6 +93,14 @@ function useProvideExpenses() {
                 setUser(newUser);
                 setInitializing(false);
             });
+        const connectedRef = firebase.database().ref('.info/connected');
+        connectedRef.on('value', function(snap) {
+            if (snap.val() === true) {
+                setIsOnline(true);
+            } else {
+                setIsOnline(false);
+            }
+        });
         return () => {
             listener();
         };
@@ -537,6 +548,7 @@ function useProvideExpenses() {
         getFile,
 
         isFeatureEnabled,
+        isOnline,
 
         loading:
             loading_upsertExpense ||

@@ -7,6 +7,7 @@ import { useExpenses } from '../commons/useExpenses';
 import SidebarComponent from '../commons/sidebar/SidebarComponent';
 import HeaderComponent from '../commons/header/HeaderComponent';
 import InitializingComponent from '../commons/InitializingComponent';
+import OfflineNotification from '../commons/OfflineNotification';
 import LoginComponent from './auth/LoginComponent';
 import Routes from './routes';
 
@@ -45,7 +46,7 @@ function MainComponent(props) {
 }
 
 function RenterRoutes() {
-    const { initializing, user } = useExpenses();
+    const { initializing, isOnline, user } = useExpenses();
     const { history, location } = useReactRouter();
 
     useEffect(() => {
@@ -57,6 +58,16 @@ function RenterRoutes() {
             }
         }
     }, [history, location, user, initializing]);
+
+    useEffect(() => {
+        if (!initializing) {
+            if (!isOnline) {
+                OfflineNotification.show();
+            } else {
+                OfflineNotification.hide();
+            }
+        }
+    }, [initializing, isOnline]);
 
     if (initializing) {
         return <InitializingComponent />;

@@ -8,6 +8,7 @@
     "array-move": "^2.1.0",
     "firebase": "^6.6.2",
     "moment": "^2.24.0",
+    "rc-notification": "^3.3.1",
     "react": "^16.9.0",
     "react-autosuggest": "^9.4.3",
     "react-burger-menu": "^2.6.13",
