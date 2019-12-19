@@ -30,8 +30,13 @@ const styles = StyleSheet.create({
         height: 40,
         fontSize: 16,
         marginTop: 4,
-        width: '100%',
+        width: '99%',
         maxWidth: 500
+    },
+    reactTagsContainer: {
+        ':nth-child(n) > div': {
+            width: '99%'
+        }
     }
 });
 
@@ -43,7 +48,7 @@ const theme = {
         height: 40,
         fontSize: 16,
         marginTop: 4,
-        width: '100%'
+        width: '99%'
     },
     inputFocused: {
         outline: 'none'
@@ -84,7 +89,6 @@ function AddExpenseComponent() {
         getFile,
         getSheet,
         initializing,
-        isFeatureEnabled,
         loadings: { loading_getSheet, loading_upsertExpense },
         logout,
         upsertExpense,
@@ -158,7 +162,7 @@ function AddExpenseComponent() {
             setFiles(newFiles);
         };
 
-        if (!initializing && !loading_getSheet && sheet) {
+        if (!initializing && !loading_getSheet && sheet && !defaultExpense) {
             const metadata = sheet.metadata;
             if (editMode) {
                 const filteredExpense = sheet.expenses.find(
@@ -171,9 +175,7 @@ function AddExpenseComponent() {
                         ...filteredExpense,
                         date: new Date(+filteredExpense.date)
                     });
-                    if (isFeatureEnabled(metadata, 'files')) {
-                        loadFiles(filteredExpense);
-                    }
+                    loadFiles(filteredExpense);
                 }
             } else if (metadata) {
                 const cities = Object.keys(metadata.cities || {});
@@ -232,7 +234,7 @@ function AddExpenseComponent() {
         loading_getSheet,
         sheet,
         getFile,
-        isFeatureEnabled
+        defaultExpense
     ]);
 
     useEffect(() => {
@@ -496,34 +498,38 @@ function AddExpenseComponent() {
                         onChange={e => setValue('description', e.target.value)}
                         ref={register({ required: true })}
                         className={css(styles.inputField)}
+                        autoComplete="off"
                     />
                     {renderError('description')}
 
-                    <ReactTags
-                        tags={tagsValues}
-                        suggestions={tagsSuggestions}
-                        onDelete={i => {
-                            const newTags = tagsValues.slice(0);
-                            newTags.splice(i, 1);
-                            setValue(
-                                'tags',
-                                newTags.map(e => e.name).join(',')
-                            );
-                        }}
-                        onAddition={tag => {
-                            const newTags = tagsValues.slice(0);
-                            if (newTags.find(i => i.name === tag.name)) {
-                                return;
-                            }
-                            newTags.push(tag);
-                            setValue(
-                                'tags',
-                                newTags.map(e => e.name).join(',')
-                            );
-                        }}
-                        minQueryLength={0}
-                        allowNew
-                    />
+                    <Column className={css(styles.reactTagsContainer)}>
+                        <ReactTags
+                            tags={tagsValues}
+                            suggestions={tagsSuggestions}
+                            onDelete={i => {
+                                const newTags = tagsValues.slice(0);
+                                newTags.splice(i, 1);
+                                setValue(
+                                    'tags',
+                                    newTags.map(e => e.name).join(',')
+                                );
+                            }}
+                            onAddition={tag => {
+                                const newTags = tagsValues.slice(0);
+                                if (newTags.find(i => i.name === tag.name)) {
+                                    return;
+                                }
+                                newTags.push(tag);
+                                setValue(
+                                    'tags',
+                                    newTags.map(e => e.name).join(',')
+                                );
+                            }}
+                            minQueryLength={0}
+                            allowNew
+                            style={{ marginTop: 20 }}
+                        />
+                    </Column>
                     <input name="tags" ref={register({})} type="hidden" />
                     {renderError('tags')}
 
@@ -539,6 +545,7 @@ function AddExpenseComponent() {
                                 'Debe ingresar un numero'
                         })}
                         className={css(styles.inputField)}
+                        autoComplete="off"
                     />
                     {renderError('amount')}
 
@@ -596,23 +603,21 @@ function AddExpenseComponent() {
                     />
                     {renderError('method')}
 
-                    {isFeatureEnabled(sheet.metadata, 'files') &&
-                        (!editMode || (editMode && defaultExpense)) && (
-                            <ImageUploadComponent
-                                onChange={newFiles => {
-                                    setFilesChanged(filesChanged + 1);
-                                    return setFiles(newFiles);
-                                }}
-                                files={files}
-                                filesChanged={filesChanged}
-                                hasFiles={
-                                    !editMode
-                                        ? false
-                                        : (defaultExpense.files || []).length >
-                                          0
-                                }
-                            />
-                        )}
+                    {(!editMode || (editMode && defaultExpense)) && (
+                        <ImageUploadComponent
+                            onChange={newFiles => {
+                                setFilesChanged(filesChanged + 1);
+                                return setFiles(newFiles);
+                            }}
+                            files={files}
+                            filesChanged={filesChanged}
+                            hasFiles={
+                                !editMode
+                                    ? false
+                                    : (defaultExpense.files || []).length > 0
+                            }
+                        />
+                    )}
                     <Row
                         flexGrow={1}
                         style={{ marginTop: 20 }}
