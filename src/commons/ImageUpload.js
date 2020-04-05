@@ -1,5 +1,5 @@
-import React, { useCallback, useState, useRef } from 'react';
-import ImageUploader from 'react-images-upload';
+import React, { useCallback, useState, useEffect } from 'react';
+import { useDropzone } from 'react-dropzone';
 import { Column } from 'simple-flexbox';
 import { StyleSheet, css } from 'aphrodite';
 import Gallery from 'react-photo-gallery';
@@ -7,9 +7,11 @@ import Carousel, { Modal, ModalGateway } from 'react-images';
 import IconExport from '../assets/icon-export';
 import IconRemove from '../assets/icon-remove';
 import IconRotate from '../assets/icon-rotate';
+import PdfLogo from '../assets/pdf_logo.png';
 import { LoadingComponent } from './InitializingComponent';
+import { isFileAnImage } from '../commons/utilities';
 
-const maxFilesCount = 3;
+const maxFilesCount = 10;
 
 const styles = StyleSheet.create({
     photoContainer: {
@@ -34,11 +36,27 @@ const styles = StyleSheet.create({
             opacity: 0.5
         }
     },
+    fileName: {
+        backgroundColor: '#CB0606',
+        color: 'white',
+        fontSize: 14,
+        fontWeight: 'bold',
+        left: '18%',
+        maxWidth: '64%',
+        overflowWrap: 'break-word',
+        position: 'absolute',
+        textAlign: 'center',
+        top: 80,
+        width: '64%',
+        zIndex: 10
+    },
     uploaderContainer: {
-        ':nth-child(n) > div > div': {
-            border: '2px dashed #9DA0A3',
-            background: 'none'
-        }
+        border: '2px dashed #9DA0A3',
+        background: 'none',
+        cursor: 'pointer',
+        marginTop: 4,
+        marginBottom: 8,
+        height: 100
     }
 });
 
@@ -48,7 +66,13 @@ function DragNDropFileComponent({ files = [], onChange, hasFiles }) {
     const [currentImage, setCurrentImage] = useState(0);
     const [viewerIsOpen, setViewerIsOpen] = useState(false);
 
-    const refUploadContainer = useRef();
+    const {
+        getRootProps,
+        getInputProps,
+        rootRef,
+        inputRef,
+        acceptedFiles
+    } = useDropzone();
 
     const openLightbox = useCallback((_, { index }) => {
         setCurrentImage(index);
@@ -60,12 +84,12 @@ function DragNDropFileComponent({ files = [], onChange, hasFiles }) {
         setViewerIsOpen(false);
     };
 
-    const onDrop = pictureFiles => {
+    useEffect(() => {
         let newFiles = [];
-        for (let i = 0; i < pictureFiles.length; i++) {
-            const fileName = pictureFiles[i].name;
+        for (let i = 0; i < acceptedFiles.length; i++) {
+            const fileName = acceptedFiles[i].name;
             if (files.findIndex(f => f.name === fileName) < 0) {
-                newFiles.push(pictureFiles[i]);
+                newFiles.push(acceptedFiles[i]);
             }
         }
         newFiles = [...files, ...newFiles];
@@ -73,13 +97,21 @@ function DragNDropFileComponent({ files = [], onChange, hasFiles }) {
             newFiles = newFiles.slice(-maxFilesCount);
         }
         onChange && onChange(newFiles);
-    };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [acceptedFiles]);
 
     const photos = files.map(file => {
-        const src = file.url || URL.createObjectURL(file);
-        let thumb = src;
-        if (file.url) {
-            thumb = file.thumb;
+        let thumb;
+        let isImage = true;
+        const src = file.publicUrl || URL.createObjectURL(file);
+        if (!isFileAnImage(file)) {
+            thumb = PdfLogo;
+            isImage = false;
+        } else {
+            thumb = src;
+            if (file.publicUrl) {
+                thumb = file.thumb;
+            }
         }
         return {
             src,
@@ -87,28 +119,37 @@ function DragNDropFileComponent({ files = [], onChange, hasFiles }) {
             width: 1,
             height: 1,
             rotate: file.rotate || 0,
-            name: file.name
+            name: file.name,
+            isImage
         };
     });
 
     const removeFile = (src, name) => {
         const filteredFiles = files.filter(
-            f => (f.url && f.url !== src) || (!f.url && f.name !== name)
+            f =>
+                (f.publicUrl && f.publicUrl !== src) ||
+                (!f.publicUrl && f.name !== name)
         );
 
-        refUploadContainer.current.state.files = refUploadContainer.current.state.files.filter(
-            f => (f.url && f.url !== src) || (!f.url && f.name !== name)
-        );
         onChange && onChange(filteredFiles);
     };
 
     const rotateImage = src => {
-        const fileIndex = files.findIndex(f => f.url && f.url === src);
+        const fileIndex = files.findIndex(
+            f => f.publicUrl && f.publicUrl === src
+        );
+        if (fileIndex < 0) {
+            return null;
+        }
         files[fileIndex].rotate = (files[fileIndex].rotate || 0) - 90;
         onChange && onChange(files);
     };
 
-    const imageRenderer = ({ index, photo, onClick }) => {
+    const imageRenderer = ({
+        index,
+        photo: { isImage, ...photo },
+        onClick
+    }) => {
         return (
             <div
                 key={`image-${index}`}
@@ -125,13 +166,15 @@ function DragNDropFileComponent({ files = [], onChange, hasFiles }) {
                     color="red"
                     onClick={() => removeFile(photo.src, photo.name)}
                 />
-                <IconRotate
-                    width={40}
-                    className={css(styles.imgButton)}
-                    style={{ top: 5, left: 5 }}
-                    color="red"
-                    onClick={() => rotateImage(photo.src)}
-                />
+                {isImage && (
+                    <IconRotate
+                        width={40}
+                        className={css(styles.imgButton)}
+                        style={{ top: 5, left: 5 }}
+                        color="red"
+                        onClick={() => rotateImage(photo.src)}
+                    />
+                )}
                 <IconExport
                     width={40}
                     className={css(styles.imgButton)}
@@ -144,7 +187,11 @@ function DragNDropFileComponent({ files = [], onChange, hasFiles }) {
                     {...photo}
                     src={photo.thumb}
                     onError={e => (e.target.src = photo.src)}
-                    onClick={e => onClick(e, { index })}
+                    onClick={e =>
+                        isImage
+                            ? onClick(e, { index })
+                            : window.open(photo.src, '_blank')
+                    }
                     onLoad={() => setLoadingImages(false)}
                     style={{
                         transform: `rotate(${photo.rotate || 0}deg)`,
@@ -152,22 +199,28 @@ function DragNDropFileComponent({ files = [], onChange, hasFiles }) {
                         maxWidth: 256
                     }}
                 />
+                {photo.name && !isImage && (
+                    <span className={css(styles.fileName)}>
+                        {photo.name.split('.')[0]}
+                    </span>
+                )}
             </div>
         );
     };
 
     return (
         <Column>
-            <Column className={css(styles.uploaderContainer)}>
-                <ImageUploader
-                    withIcon={true}
-                    buttonText="Subir imagenes"
-                    label={`Maximo ${maxFilesCount} archivos. Tamaño maximo: 5mb`}
-                    onChange={onDrop}
-                    imgExtension={['.jpg', '.gif', '.png', '.gif', '.jpeg']}
-                    maxFileSize={5242880}
-                    ref={refUploadContainer}
-                />
+            <Column>
+                <Column
+                    vertical="center"
+                    horizontal="center"
+                    {...getRootProps()}
+                    className={css(styles.uploaderContainer)}
+                    ref={rootRef}
+                >
+                    <input ref={inputRef} {...getInputProps()} />
+                    Drag 'n' drop some files here, or click to select files
+                </Column>
             </Column>
             <LoadingComponent loading={loadingImages}>
                 <Gallery

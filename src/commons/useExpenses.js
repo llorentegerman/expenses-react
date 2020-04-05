@@ -236,12 +236,14 @@ function useProvideExpenses() {
 
             // Create a root reference
             var storageRef = firebase.storage().ref();
-
             for (let i = 0; i < files.length; i++) {
                 if (files[i].url) {
-                    newExpense.files.push({ url: files[i].path });
+                    newExpense.files.push({
+                        url: files[i].url,
+                        name: files[i].name || ''
+                    });
                     if (files[i].rotate) {
-                        await rotateImage(files[i].path, files[i].rotate);
+                        await rotateImage(files[i].url, files[i].rotate);
                     }
                     continue;
                 }
@@ -250,7 +252,10 @@ function useProvideExpenses() {
                 try {
                     var fileRef = storageRef.child(filePath);
                     await fileRef.put(files[i]);
-                    newExpense.files.push({ url: filePath });
+                    newExpense.files.push({
+                        url: filePath,
+                        name: files[i].name
+                    });
                 } catch (e) {
                     console.log('error', e.message);
                 }

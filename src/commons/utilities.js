@@ -11,3 +11,18 @@ export const numberFormat = (value, decimals = 2) => {
 
 export const getDaysInPeriod = period =>
     moment(`${period}-01`, 'YYYY-MM-DD').daysInMonth();
+
+export const isFileAnImage = file =>
+    !(
+        (file.type && file.type !== 'image/jpeg') ||
+        (file.path &&
+            file.path
+                .split('.')
+                .pop()
+                .toLowerCase() === 'pdf') ||
+        (file.url &&
+            file.url
+                .split('.')
+                .pop()
+                .toLowerCase() === 'pdf')
+    );

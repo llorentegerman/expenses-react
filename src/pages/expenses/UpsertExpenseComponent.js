@@ -10,6 +10,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { useExpenses } from '../../commons/useExpenses';
 import { LoadingComponent } from '../../commons/InitializingComponent';
 import ImageUploadComponent from '../../commons/ImageUpload';
+import { isFileAnImage } from '../../commons/utilities';
 import '../../commons/styles/tags.css';
 
 const styles = StyleSheet.create({
@@ -142,9 +143,20 @@ function AddExpenseComponent() {
             const expenseFiles = filteredExpense.files || [];
             for (let i = 0; i < expenseFiles.length; i++) {
                 let url = expenseFiles[i].url;
+                let publicUrl = url;
                 try {
-                    url = await getFile(expenseFiles[i].url);
+                    publicUrl = await getFile(expenseFiles[i].url);
                 } catch (e) {}
+
+                if (!isFileAnImage(expenseFiles[i])) {
+                    newFiles.push({
+                        url,
+                        name: expenseFiles[i].name,
+                        publicUrl,
+                        thumb: ''
+                    });
+                    continue;
+                }
 
                 const thumbFilename = `thumb_${expenseFiles[i].url.substring(
                     expenseFiles[i].url.lastIndexOf('/') + 1
@@ -157,7 +169,12 @@ function AddExpenseComponent() {
                 try {
                     thumb = await getFile(`${thumbFolder}${thumbFilename}`);
                 } catch (e) {}
-                newFiles.push({ url, path: expenseFiles[i].url, thumb });
+                newFiles.push({
+                    url,
+                    name: expenseFiles[i].name,
+                    publicUrl,
+                    thumb
+                });
             }
             setFiles(newFiles);
         };

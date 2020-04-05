@@ -86,7 +86,7 @@ function HeaderComponent(props) {
     }, [location, expenses, expenses.user]);
 
     if (!expenses.user) {
-        return <div></div>;;
+        return <div></div>;
     }
 
     let title = location.pathname.split('/').pop();
