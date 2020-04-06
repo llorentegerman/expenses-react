@@ -76,13 +76,28 @@ function ExpensesComponent() {
     const onSheetClick = id => history.push(`/sheet/${id}`);
 
     const pairs = [];
-    Object.keys(user.sheets || []).forEach((value, index) => {
-        const pairIndex = Math.floor(index / 2);
-        if (index % 2 === 0 && pairs.length <= pairIndex) {
-            pairs.push([]);
-        }
-        return pairs[pairIndex].push(user.sheets[value]);
-    });
+    const sheets = Object.keys(user.sheets || [])
+        .map((value, index) => {
+            const sheet = user.sheets[value];
+            const metadata = sheet.metadata || {};
+            return {
+                position:
+                    metadata.position !== undefined ? metadata.position : index,
+                show: metadata.show !== undefined ? metadata.show : true,
+                id: sheet.id
+            };
+        })
+        .sort((a, b) => a.position - b.position);
+
+    sheets
+        .filter(s => s.show)
+        .forEach((sheet, index) => {
+            const pairIndex = Math.floor(index / 2);
+            if (index % 2 === 0 && pairs.length <= pairIndex) {
+                pairs.push([]);
+            }
+            return pairs[pairIndex].push(user.sheets[sheet.id]);
+        });
 
     if (pairs.length > 0 && pairs[pairs.length - 1].length === 1) {
         pairs[pairs.length - 1].push({ plus: true });

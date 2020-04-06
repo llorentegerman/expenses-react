@@ -52,6 +52,7 @@ function useProvideExpenses() {
     const [loading_logout, setloading_logout] = useState(false);
     const [loading_setSection, setloading_setSection] = useState(false);
     const [loading_setSheetName, setloading_setSheetName] = useState(false);
+    const [loading_setUserSheets, setloading_setUserSheets] = useState(false);
 
     const [user, setUser] = useState(null);
     const [isOnline, setIsOnline] = useState(true);
@@ -465,6 +466,23 @@ function useProvideExpenses() {
         }
     };
 
+    const setUserSheets = async sheets => {
+        setloading_setUserSheets(true);
+        try {
+            await firebase
+                .database()
+                .ref(`users/${user.uid}/sheets`)
+                .set(sheets);
+            const refreshResponse = await refreshUser(user.uid);
+            setUser(refreshResponse.user);
+        } catch (ex) {
+            console.log('Error setSheetName', ex.message);
+            alert('Error Set Sheet Name');
+        } finally {
+            setloading_setUserSheets(false);
+        }
+    };
+
     const setMetadata = async (sheetId, type, items) => {
         setloading_setSection(true);
         try {
@@ -555,6 +573,8 @@ function useProvideExpenses() {
         isFeatureEnabled,
         isOnline,
 
+        setUserSheets,
+
         loading:
             loading_upsertExpense ||
             loading_removeExpense ||
@@ -565,6 +585,7 @@ function useProvideExpenses() {
             loading_setSection ||
             loading_setSheetName ||
             loading_getSheet ||
+            loading_setUserSheets ||
             loading_getExpenseById,
         loadings: {
             loading_upsertExpense,
@@ -575,6 +596,7 @@ function useProvideExpenses() {
             logout: loading_logout,
             setCategories: loading_setSection,
             setSheetName: loading_setSheetName,
+            setUserSheets: loading_setUserSheets,
             loading_getSheet,
             loading_getExpenseById
         }

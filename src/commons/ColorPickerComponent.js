@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
     }
 });
 
-function ComboItemsComponent({
+function ColorPickerComponent({
     defaultColor = '#FFFFFF',
     onChangeComplete = () => {}
 }) {
@@ -62,4 +62,4 @@ function ComboItemsComponent({
     );
 }
 
-export default ComboItemsComponent;
+export default ColorPickerComponent;

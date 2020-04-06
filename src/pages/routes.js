@@ -4,6 +4,7 @@ import ExpensesComponent from './expenses/ExpensesComponent';
 import UpsertExpenseComponent from './expenses/UpsertExpenseComponent';
 import NewSheetComponent from './sheets/NewSheetComponent';
 import ComboItemsComponent from './settings/ComboItemsComponent';
+import UserSettingsComponent from './settings/UserSettingsComponent';
 import DashboardComponent from './dashboard/DashboardComponent';
 import SettingsSheetComponent from './sheets/SettingsSheetComponent';
 
@@ -56,12 +57,33 @@ export default function RenterRoutes() {
             <Route
                 exact
                 path={`/sheet/:sheetId/tags`}
-                render={() => <ComboItemsComponent title="Tags" type="tags" />}
+                render={() => (
+                    <ComboItemsComponent
+                        title="Tags"
+                        type="tags"
+                        options={{
+                            showEditButton: true,
+                            fields: [
+                                {
+                                    name: 'backgroundColor',
+                                    title: 'Fondo',
+                                    type: 'color'
+                                },
+                                { name: 'color', title: 'Color', type: 'color' }
+                            ]
+                        }}
+                    />
+                )}
             />
             <Route
                 exact
                 path={`/sheet/:sheetId/settings`}
                 component={SettingsSheetComponent}
+            />
+            <Route
+                exact
+                path={`/settings`}
+                render={() => <UserSettingsComponent />}
             />
             <Route exact path={`/newsheet`} component={NewSheetComponent} />
             <Route exact path={`/dashboard`} component={DashboardComponent} />

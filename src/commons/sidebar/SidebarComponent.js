@@ -74,10 +74,20 @@ function SidebarComponent() {
     const [expanded, setExpanded] = useState(false);
     const [selectedItem, setSelectedItem] = useState(location.pathname);
 
-    let userSheetsArray = (user || {}).sheets || {};
-    userSheetsArray = Object.keys(userSheetsArray).map(
-        sId => userSheetsArray[sId]
-    );
+    const sheets = Object.keys((user || {}).sheets || {})
+        .map((value, index) => {
+            const sheet = user.sheets[value];
+            const metadata = sheet.metadata || {};
+            return {
+                position:
+                    metadata.position !== undefined ? metadata.position : index,
+                show: metadata.show !== undefined ? metadata.show : true,
+                id: sheet.id,
+                name: sheet.name
+            };
+        })
+        .filter(s => s.show)
+        .sort((a, b) => a.position - b.position);
 
     const onItemClicked = path => {
         setExpanded(false);
@@ -110,7 +120,7 @@ function SidebarComponent() {
                 active={selectedItem === 'dashboard'}
             />
 
-            {userSheetsArray.map(s => (
+            {sheets.map(s => (
                 <MenuItemComponent
                     key={`sheet-${s.id}`}
                     title={s.name}

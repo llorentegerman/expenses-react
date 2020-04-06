@@ -6,7 +6,7 @@
     "@welldone-software/why-did-you-render": "^3.3.5",
     "aphrodite": "^2.4.0",
     "array-move": "^2.1.0",
-    "firebase": "^6.6.2",
+    "firebase": "^7.13.2",
     "moment": "^2.24.0",
     "rc-notification": "^3.3.1",
     "react": "^16.9.0",
@@ -26,6 +26,7 @@
     "react-scripts": "3.1.1",
     "react-sortable-hoc": "^1.10.1",
     "react-super-responsive-table": "^5.0.4",
+    "react-switch": "^5.0.1",
     "react-tag-autocomplete": "^6.0.0-beta.1",
     "simple-flexbox": "^2.3.0",
     "use-react-router": "^1.0.7"
