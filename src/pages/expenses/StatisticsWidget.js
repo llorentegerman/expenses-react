@@ -39,7 +39,7 @@ const borderColors = [
     '#95BF8F'
 ];
 
-function ExpensesComponent({ index, statistics }) {
+function StatisticsWidget({ index, statistics }) {
     return (
         <Column
             horizontal="start"
@@ -70,6 +70,6 @@ function ExpensesComponent({ index, statistics }) {
     );
 }
 
-ExpensesComponent.whyDidYouRender = false;
+StatisticsWidget.whyDidYouRender = false;
 
-export default ExpensesComponent;
+export default StatisticsWidget;

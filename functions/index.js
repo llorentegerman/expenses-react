@@ -30,6 +30,7 @@ exports.updateStatics = functions.database
         let minPeriod;
         let total = 0;
         const periods = {};
+        const categories = {};
         array.forEach(i => {
             if (i.tags && i.tags.indexOf('noavg') >= 0) {
                 return;
@@ -45,11 +46,26 @@ exports.updateStatics = functions.database
             if (!periods[period]) {
                 periods[period] = {
                     total: 0,
+                    average: 0,
+                    categories: {}
+                };
+            }
+            if (!periods[period].categories[i.category]) {
+                periods[period].categories[i.category] = {
+                    total: 0,
+                    average: 0
+                };
+            }
+            if (!categories[i.category]) {
+                categories[i.category] = {
+                    total: 0,
                     average: 0
                 };
             }
 
             periods[period].total += Number(i.amount);
+            categories[i.category].total += Number(i.amount);
+            periods[period].categories[i.category].total += Number(i.amount);
         });
 
         Object.keys(periods).forEach(p => {
@@ -87,6 +103,10 @@ exports.updateStatics = functions.database
                         ) + 1;
             }
             periods[p].average = periods[p].total / periodDays;
+            Object.keys(periods[p].categories).forEach(c => {
+                periods[p].categories[c].average =
+                    periods[p].categories[c].total / periodDays;
+            });
             periods[p].days = periodDays;
             periods[p].lastUpdate = new Date().getTime();
         });
@@ -101,8 +121,14 @@ exports.updateStatics = functions.database
                         .startOf('day'),
                     'days'
                 ) + 1;
+
+        Object.keys(categories).forEach(c => {
+            categories[c].average = categories[c].total / totalDays;
+        });
+
         const updateItem = {
             ...statistics,
+            categories,
             minDate,
             total,
             average: total / totalDays,

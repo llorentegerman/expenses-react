@@ -9,6 +9,7 @@ import ExpenseItem from './ExpenseItem';
 import { numberFormat } from '../../commons/utilities';
 import { LoadingComponent } from '../../commons/InitializingComponent';
 import StatisticsWidget from './StatisticsWidget';
+import StatisticsByCategoryWidget from './StatisticsByCategoryWidget';
 import '../../commons/styles/pagination.css';
 
 const styles = StyleSheet.create({
@@ -190,15 +191,19 @@ function ExpensesComponent() {
     const isMobile = () => window.innerWidth <= 1080;
 
     const periodos = [];
+    let totalDays = 0;
     if (statistics) {
         Object.keys(statistics).forEach(p => {
-            if (typeof statistics[p] === 'object') {
+            if (typeof statistics[p] === 'object' && p !== 'categories') {
                 periodos.push({
                     ...statistics[p],
                     periodo: p
                 });
             }
         });
+
+        var diffTime = Math.abs(statistics.lastUpdate - statistics.minDate);
+        totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
     }
 
     const sheetName =
@@ -255,7 +260,7 @@ function ExpensesComponent() {
                                     Math.round(statistics.average || 0),
                                     0
                                 )}{' '}
-                                / día
+                                / día. {totalDays} días.
                             </Row>
                         </Row>
 
@@ -308,6 +313,11 @@ function ExpensesComponent() {
                                     />
                                 );
                             })}
+                        {statistics.categories && (
+                            <StatisticsByCategoryWidget
+                                categories={statistics.categories}
+                            />
+                        )}
                     </Column>
                 </Row>
             </Column>
