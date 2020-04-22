@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext, createContext } from 'react';
 import firebase from 'firebase';
+import { formatData } from './utilities';
 
 const expensesContext = createContext();
 
@@ -28,16 +29,6 @@ const config = {
 firebase.initializeApp(config);
 
 const googleProvider = new firebase.auth.GoogleAuthProvider();
-
-const formatData = data => {
-    const array = [...data];
-    array.sort(function(a, b) {
-        a = a.date;
-        b = b.date;
-        return a > b ? -1 : a < b ? 1 : 0;
-    });
-    return array;
-};
 
 function useProvideExpenses() {
     const [initializing, setInitializing] = useState(true);

@@ -3,7 +3,7 @@ import { StyleSheet, css } from 'aphrodite';
 import useReactRouter from 'use-react-router';
 import useForm from 'react-hook-form';
 import { Column, Row } from 'simple-flexbox';
-import { useExpenses } from '../../commons/useExpenses';
+import { useExpenses } from '../../logic/useExpenses';
 
 const styles = StyleSheet.create({
     button: {
@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     }
 });
 
-function SettingsComponent(props) {
+function SettingsComponent() {
     const { history, match } = useReactRouter();
     const {
         user,

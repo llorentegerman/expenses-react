@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, css } from 'aphrodite';
 import { Column, Row } from 'simple-flexbox';
-import { useExpenses } from '../../commons/useExpenses';
+import { useExpenses } from '../../logic/useExpenses';
 import { LoadingComponent } from '../../commons/InitializingComponent';
 import GoogleButton from '../../assets/google_button.jpg';
 

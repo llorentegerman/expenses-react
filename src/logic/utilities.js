@@ -26,3 +26,13 @@ export const isFileAnImage = file =>
                 .pop()
                 .toLowerCase() === 'pdf')
     );
+
+export const formatData = data => {
+    const array = [...data];
+    array.sort((a, b) => {
+        a = a.date;
+        b = b.date;
+        return a > b ? -1 : a < b ? 1 : 0;
+    });
+    return array;
+};

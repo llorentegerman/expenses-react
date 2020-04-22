@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { StyleSheet, css } from 'aphrodite';
 import useReactRouter from 'use-react-router';
 import { Column, Row } from 'simple-flexbox';
-import { useExpenses } from '../../commons/useExpenses';
+import { useExpenses } from '../../logic/useExpenses';
 import IconPlus from '../../assets/icon-plus.js';
 
 const styles = StyleSheet.create({

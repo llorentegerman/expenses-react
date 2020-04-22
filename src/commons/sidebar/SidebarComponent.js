@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, css } from 'aphrodite';
 import useReactRouter from 'use-react-router';
-import { useExpenses } from '../useExpenses';
+import { useExpenses } from '../../logic/useExpenses';
 import LogoComponent from './LogoComponent';
 import MenuItemComponent from './MenuItemComponent';
 import IconOverview from '../../assets/icon-overview.js';

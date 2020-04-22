@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, css } from 'aphrodite';
 import { Column } from 'simple-flexbox';
-import { getDaysInPeriod, numberFormat } from '../../commons/utilities';
+import { getDaysInPeriod, numberFormat } from '../../logic/utilities';
 
 const styles = StyleSheet.create({
     statistics: {

@@ -4,7 +4,7 @@ import { Column } from 'simple-flexbox';
 import useReactRouter from 'use-react-router';
 import { LoadingComponent } from '../../commons/InitializingComponent';
 import SortableListComponent from './SortableListComponent';
-import { useExpenses } from '../../commons/useExpenses';
+import { useExpenses } from '../../logic/useExpenses';
 
 const styles = StyleSheet.create({
     title: {

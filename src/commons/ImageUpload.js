@@ -9,7 +9,7 @@ import IconRemove from '../assets/icon-remove';
 import IconRotate from '../assets/icon-rotate';
 import PdfLogo from '../assets/pdf_logo.png';
 import { LoadingComponent } from './InitializingComponent';
-import { isFileAnImage } from '../commons/utilities';
+import { isFileAnImage } from '../logic/utilities';
 
 const maxFilesCount = 10;
 

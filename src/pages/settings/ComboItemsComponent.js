@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import useReactRouter from 'use-react-router';
 import { StyleSheet, css } from 'aphrodite';
 import { Column } from 'simple-flexbox';
-import { useExpenses } from '../../commons/useExpenses';
+import { useExpenses } from '../../logic/useExpenses';
 import { LoadingComponent } from '../../commons/InitializingComponent';
 import SortableListComponent from './SortableListComponent';
 

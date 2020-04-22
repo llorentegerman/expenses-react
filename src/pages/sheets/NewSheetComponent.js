@@ -4,7 +4,7 @@ import useReactRouter from 'use-react-router';
 import { Column, Row } from 'simple-flexbox';
 import useForm from 'react-hook-form';
 import 'react-datepicker/dist/react-datepicker.css';
-import { useExpenses } from '../../commons/useExpenses';
+import { useExpenses } from '../../logic/useExpenses';
 
 const styles = StyleSheet.create({
     button: {

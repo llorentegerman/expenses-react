@@ -1,16 +1,16 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, css } from 'aphrodite';
 import useReactRouter from 'use-react-router';
 import { Column, Row } from 'simple-flexbox';
 import useForm from 'react-hook-form';
-import Autosuggest from 'react-autosuggest';
 import DatePicker from 'react-datepicker';
 import ReactTags from 'react-tag-autocomplete';
 import 'react-datepicker/dist/react-datepicker.css';
-import { useExpenses } from '../../commons/useExpenses';
+import { useExpenses } from '../../logic/useExpenses';
 import { LoadingComponent } from '../../commons/InitializingComponent';
 import ImageUploadComponent from '../../commons/ImageUpload';
-import { isFileAnImage } from '../../commons/utilities';
+import AutosuggestCustom from '../../commons/AutosuggestCustom';
+import { isFileAnImage } from '../../logic/utilities';
 import '../../commons/styles/tags.css';
 
 const styles = StyleSheet.create({
@@ -41,50 +41,6 @@ const styles = StyleSheet.create({
     }
 });
 
-const theme = {
-    container: {
-        position: 'relative'
-    },
-    input: {
-        height: 40,
-        fontSize: 16,
-        marginTop: 4,
-        width: '99%'
-    },
-    inputFocused: {
-        outline: 'none'
-    },
-    inputOpen: {
-        borderBottomLeftRadius: 0,
-        borderBottomRightRadius: 0
-    },
-    suggestionsContainer: {
-        display: 'none'
-    },
-    suggestionsContainerOpen: {
-        display: 'block',
-        position: 'absolute',
-        top: 45,
-        width: 300,
-        border: '1px solid #aaa',
-        backgroundColor: '#fff',
-        borderBottomLeftRadius: 4,
-        borderBottomRightRadius: 4,
-        zIndex: 2
-    },
-    suggestionsList: {
-        margin: 0,
-        padding: 0,
-        listStyleType: 'none'
-    },
-    suggestion: {
-        cursor: 'pointer'
-    },
-    suggestionHighlighted: {
-        backgroundColor: '#ddd'
-    }
-};
-
 function AddExpenseComponent() {
     const {
         getFile,
@@ -105,15 +61,7 @@ function AddExpenseComponent() {
     });
 
     const [sheet, setSheet] = useState();
-    const [suggestionsCities, setSuggestionsCities] = useState([]);
-    const [suggestionsCategories, setSuggestionsCategories] = useState([]);
-    const [suggestionsCurrencies, setSuggestionsCurrencies] = useState([]);
-    const [suggestionsMethods, setSuggestionsMethods] = useState([]);
     const [defaultExpense, setDefaultExpense] = useState();
-    const [initializingCities, setInitializingCities] = useState(true);
-    const [initializingCategories, setInitializingCategories] = useState(true);
-    const [initializingCurrencies, setInitializingCurrencies] = useState(true);
-    const [initializingMethods, setInitializingMethods] = useState(true);
 
     const [files, setFiles] = useState([]);
     const [filesChanged, setFilesChanged] = useState(0);
@@ -254,12 +202,6 @@ function AddExpenseComponent() {
         defaultExpense
     ]);
 
-    useEffect(() => {
-        if (defaultExpense) {
-            reset(defaultExpense);
-        }
-    }, [defaultExpense, reset]);
-
     const metadata = sheet && sheet.metadata;
     const expenses = sheet && sheet.expenses;
 
@@ -315,85 +257,12 @@ function AddExpenseComponent() {
         return [];
     }, [metadata]);
 
-    const getSuggestionsCities = useCallback(
-        value => {
-            if (initializingCities) {
-                setInitializingCities(false);
-                return cities;
-            }
-            const inputValue = value.trim().toLowerCase();
-            const inputLength = inputValue.length;
-
-            return inputLength === 0
-                ? cities
-                : cities.filter(
-                      lang =>
-                          lang.toLowerCase().slice(0, inputLength) ===
-                          inputValue
-                  );
-        },
-        [cities, initializingCities]
-    );
-
-    const getSuggestionsCategories = useCallback(
-        value => {
-            if (initializingCategories) {
-                setInitializingCategories(false);
-                return categories;
-            }
-            const inputValue = value.trim().toLowerCase();
-            const inputLength = inputValue.length;
-
-            return inputLength === 0
-                ? categories
-                : categories.filter(
-                      lang =>
-                          lang.toLowerCase().slice(0, inputLength) ===
-                          inputValue
-                  );
-        },
-        [categories, initializingCategories]
-    );
-
-    const getSuggestionsCurrencies = useCallback(
-        value => {
-            if (initializingCurrencies) {
-                setInitializingCurrencies(false);
-                return currencies;
-            }
-            const inputValue = value.trim().toLowerCase();
-            const inputLength = inputValue.length;
-
-            return inputLength === 0
-                ? currencies
-                : currencies.filter(
-                      lang =>
-                          lang.toLowerCase().slice(0, inputLength) ===
-                          inputValue
-                  );
-        },
-        [currencies, initializingCurrencies]
-    );
-
-    const getSuggestionsMethods = useCallback(
-        value => {
-            if (initializingMethods) {
-                setInitializingMethods(false);
-                return methods;
-            }
-            const inputValue = value.trim().toLowerCase();
-            const inputLength = inputValue.length;
-
-            return inputLength === 0
-                ? methods
-                : methods.filter(
-                      lang =>
-                          lang.toLowerCase().slice(0, inputLength) ===
-                          inputValue
-                  );
-        },
-        [initializingMethods, methods]
-    );
+    useEffect(() => {
+        if (defaultExpense) {
+            reset(defaultExpense);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [defaultExpense, reset]);
 
     if (!expenses || !metadata) {
         return <div></div>;
@@ -454,24 +323,13 @@ function AddExpenseComponent() {
                     />
                     {renderError('date')}
 
-                    <Autosuggest
-                        suggestions={suggestionsCities}
-                        onSuggestionsFetchRequested={({ value }) =>
-                            setSuggestionsCities(getSuggestionsCities(value))
+                    <AutosuggestCustom
+                        onChange={(_, { newValue }) =>
+                            setValue('city', newValue)
                         }
-                        onSuggestionsClearRequested={() =>
-                            setSuggestionsCities([])
-                        }
-                        getSuggestionValue={value => value}
-                        renderSuggestion={suggestion => <div>{suggestion}</div>}
-                        shouldRenderSuggestions={() => true}
-                        theme={theme}
-                        inputProps={{
-                            placeholder: 'CIUDAD',
-                            value: watch('city', ''),
-                            onChange: (e, { newValue }) =>
-                                setValue('city', newValue)
-                        }}
+                        placeholder="CIUDAD"
+                        value={watch('city', (defaultExpense || {}).city || '')}
+                        values={cities}
                     />
                     <input
                         name="city"
@@ -480,26 +338,16 @@ function AddExpenseComponent() {
                     />
                     {renderError('city')}
 
-                    <Autosuggest
-                        suggestions={suggestionsCategories}
-                        onSuggestionsFetchRequested={({ value }) =>
-                            setSuggestionsCategories(
-                                getSuggestionsCategories(value)
-                            )
+                    <AutosuggestCustom
+                        onChange={(_, { newValue }) =>
+                            setValue('category', newValue)
                         }
-                        onSuggestionsClearRequested={() =>
-                            setSuggestionsCategories([])
-                        }
-                        getSuggestionValue={value => value}
-                        renderSuggestion={suggestion => <div>{suggestion}</div>}
-                        shouldRenderSuggestions={() => true}
-                        theme={theme}
-                        inputProps={{
-                            placeholder: 'CATEGORIA',
-                            value: watch('category', ''),
-                            onChange: (e, { newValue }) =>
-                                setValue('category', newValue)
-                        }}
+                        placeholder="CATEGORIA"
+                        value={watch(
+                            'category',
+                            (defaultExpense || {}).category || ''
+                        )}
+                        values={categories}
                     />
                     <input
                         name="category"
@@ -566,26 +414,16 @@ function AddExpenseComponent() {
                     />
                     {renderError('amount')}
 
-                    <Autosuggest
-                        suggestions={suggestionsCurrencies}
-                        onSuggestionsFetchRequested={({ value }) =>
-                            setSuggestionsCurrencies(
-                                getSuggestionsCurrencies(value)
-                            )
+                    <AutosuggestCustom
+                        onChange={(_, { newValue }) =>
+                            setValue('currency', newValue)
                         }
-                        onSuggestionsClearRequested={() =>
-                            setSuggestionsCurrencies([])
-                        }
-                        getSuggestionValue={value => value}
-                        renderSuggestion={suggestion => <div>{suggestion}</div>}
-                        shouldRenderSuggestions={() => true}
-                        theme={theme}
-                        inputProps={{
-                            placeholder: 'MONEDA',
-                            value: watch('currency', ''),
-                            onChange: (e, { newValue }) =>
-                                setValue('currency', newValue)
-                        }}
+                        placeholder="MONEDA"
+                        value={watch(
+                            'currency',
+                            (defaultExpense || {}).currency || ''
+                        )}
+                        values={currencies}
                     />
                     <input
                         name="currency"
@@ -594,24 +432,16 @@ function AddExpenseComponent() {
                     />
                     {renderError('currency')}
 
-                    <Autosuggest
-                        suggestions={suggestionsMethods}
-                        onSuggestionsFetchRequested={({ value }) =>
-                            setSuggestionsMethods(getSuggestionsMethods(value))
+                    <AutosuggestCustom
+                        onChange={(_, { newValue }) =>
+                            setValue('method', newValue)
                         }
-                        onSuggestionsClearRequested={() =>
-                            setSuggestionsMethods([])
-                        }
-                        getSuggestionValue={value => value}
-                        renderSuggestion={suggestion => <div>{suggestion}</div>}
-                        shouldRenderSuggestions={() => true}
-                        theme={theme}
-                        inputProps={{
-                            placeholder: 'METODO',
-                            value: watch('method', ''),
-                            onChange: (e, { newValue }) =>
-                                setValue('method', newValue)
-                        }}
+                        placeholder="METODO"
+                        value={watch(
+                            'method',
+                            (defaultExpense || {}).method || ''
+                        )}
+                        values={methods}
                     />
                     <input
                         name="method"

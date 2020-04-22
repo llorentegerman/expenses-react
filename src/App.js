@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { ProvideExpenses } from './commons/useExpenses';
+import { ProvideExpenses } from './logic/useExpenses';
 import MainComponent from './pages/MainComponent';
 import './App.css';
 

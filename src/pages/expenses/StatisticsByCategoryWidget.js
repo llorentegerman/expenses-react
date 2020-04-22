@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, css } from 'aphrodite';
 import { Column, Row } from 'simple-flexbox';
-import { numberFormat } from '../../commons/utilities';
+import { numberFormat } from '../../logic/utilities';
 
 const styles = StyleSheet.create({
     statistics: {
