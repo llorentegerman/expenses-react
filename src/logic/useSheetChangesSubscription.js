@@ -1,21 +1,21 @@
 import { useState, useEffect } from 'react';
+import { useFirebase } from './useFirebase';
 import { useExpenses } from './useExpenses';
+import { sortExpensesByDate } from './utilities';
 
 export function useSheetChangesSubscription(sheetId) {
-    const {
-        formatData,
-        user,
-        logout,
-        getSheet,
-        getExpensesRef,
-        getMetadataRef
-    } = useExpenses();
+    const { user, logout, getSheet } = useExpenses();
+
+    const { getExpensesRef, getMetadataRef } = useFirebase();
 
     const [expenses, setExpenses] = useState([]);
     const [statistics, setStatistics] = useState({});
     const [tags, setTags] = useState([]);
 
     useEffect(() => {
+        let expensesRef;
+        let metadataRef;
+
         let isInitialFetch = true;
         let _rawData = [];
         let _metadata = {};
@@ -25,7 +25,7 @@ export function useSheetChangesSubscription(sheetId) {
             setExpenses(getSheetResponse.expenses);
             setStatistics(getSheetResponse.metadata.statistics);
             setTags(getSheetResponse.metadata.tags);
-            _rawData = getSheetResponse.expensesRaw;
+            _rawData = getSheetResponse.expenses;
             _metadata = getSheetResponse.metadata;
             isInitialFetch = false;
         };
@@ -34,15 +34,15 @@ export function useSheetChangesSubscription(sheetId) {
             if (!sheet) {
                 logout();
             } else {
-                const expensesRef = getExpensesRef(sheetId);
-                const metadataRef = getMetadataRef(sheetId);
+                expensesRef = getExpensesRef(sheetId);
+                metadataRef = getMetadataRef(sheetId);
                 expensesRef.on('child_added', childSnapshot => {
                     if (isInitialFetch) {
                         return;
                     }
                     const array = [..._rawData, childSnapshot.val()];
                     _rawData = [...array];
-                    const formatted = formatData(array);
+                    const formatted = sortExpensesByDate(array);
                     setExpenses(formatted);
                 });
 
@@ -56,7 +56,7 @@ export function useSheetChangesSubscription(sheetId) {
                     const newRawData = [..._rawData];
                     newRawData[dataIndex] = childSnapshot.val();
                     _rawData = [...newRawData];
-                    const formatted = formatData(newRawData);
+                    const formatted = sortExpensesByDate(newRawData);
                     setExpenses(formatted);
                 });
 
@@ -69,7 +69,7 @@ export function useSheetChangesSubscription(sheetId) {
                     );
                     const newRawData = [..._rawData];
                     newRawData.splice(dataIndex, 1);
-                    const formatted = formatData(newRawData);
+                    const formatted = sortExpensesByDate(newRawData);
                     setExpenses(formatted);
                 });
 
@@ -103,6 +103,15 @@ export function useSheetChangesSubscription(sheetId) {
                 getSheetFetch(sheetId);
             }
         }
+
+        return () => {
+            if (expensesRef) {
+                expensesRef.off();
+            }
+            if (metadataRef) {
+                metadataRef.off();
+            }
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sheetId]);
 

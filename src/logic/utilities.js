@@ -27,7 +27,7 @@ export const isFileAnImage = file =>
                 .toLowerCase() === 'pdf')
     );
 
-export const formatData = data => {
+export const sortExpensesByDate = data => {
     const array = [...data];
     array.sort((a, b) => {
         a = a.date;

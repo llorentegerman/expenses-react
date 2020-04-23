@@ -273,6 +273,7 @@ function AddExpenseComponent() {
             date: new Date(date).getTime(),
             ...data
         };
+        newData.dateNeg = -newData.date;
         if (editMode) {
             newData.id = match.params.expenseId;
         }

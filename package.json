@@ -36,7 +36,9 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "functions:redeploy": "firebase functions:delete updateStatics updateSheetName removeOldFiles resizeImages --force && firebase deploy --only functions",
+    "functions:delete": "firebase functions:delete updateStatics updateSheetName removeOldFiles resizeImage rotateImage --force",
+    "functions:deploy": "firebase deploy --only functions",
+    "functions:redeploy": "yarn functions:delete && yarn functions:deploy",
     "deploy": "yarn build && firebase deploy --only hosting"
   },
   "eslintConfig": {

@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useContext, createContext } from 'react';
-import firebase from 'firebase';
-import { formatData } from './utilities';
+import React, { useState, useContext, createContext } from 'react';
+import { init as initFirebase, useFirebase } from './useFirebase';
 
 const expensesContext = createContext();
 
@@ -17,21 +16,18 @@ export const useExpenses = () => {
     return useContext(expensesContext);
 };
 
-const config = {
-    apiKey: process.env.REACT_APP_apiKey,
-    authDomain: process.env.REACT_APP_authDomain,
-    databaseURL: process.env.REACT_APP_databaseURL,
-    projectId: process.env.REACT_APP_projectId,
-    storageBucket: process.env.REACT_APP_storageBucket,
-    messagingSenderId: process.env.REACT_APP_messagingSenderId,
-    appId: process.env.REACT_APP_appId
-};
-firebase.initializeApp(config);
-
-const googleProvider = new firebase.auth.GoogleAuthProvider();
+const { firebase, googleProvider } = initFirebase();
 
 function useProvideExpenses() {
-    const [initializing, setInitializing] = useState(true);
+    const {
+        getExpensesRef,
+        getMetadataRef,
+        initializing,
+        isOnline,
+        refreshUser,
+        setUser,
+        user
+    } = useFirebase();
 
     const [loading_getSheet, setloading_getSheet] = useState(false);
     const [loading_getExpenseById, setloading_getExpenseById] = useState(false);
@@ -45,23 +41,6 @@ function useProvideExpenses() {
     const [loading_setSheetName, setloading_setSheetName] = useState(false);
     const [loading_setUserSheets, setloading_setUserSheets] = useState(false);
 
-    const [user, setUser] = useState(null);
-    const [isOnline, setIsOnline] = useState(true);
-
-    const refreshUser = async userUID => {
-        const user = (
-            await firebase
-                .database()
-                .ref(`/users/${userUID}`)
-                .once('value')
-        ).val();
-        user.uid = userUID;
-
-        return {
-            user
-        };
-    };
-
     // useEffect(() => {
     //     let newUser = null;
     //     refreshUser('QjRiOvbUTpZFFaWLgM48UF5YPBG3').then(
@@ -73,52 +52,41 @@ function useProvideExpenses() {
     //     );
     // }, []);
 
-    useEffect(() => {
-        const listener = firebase
-            .auth()
-            .onAuthStateChanged(async loggedUser => {
-                let newUser = null;
-                if (loggedUser) {
-                    const refreshResponse = await refreshUser(loggedUser.uid);
-                    newUser = refreshResponse.user;
-                }
-                setUser(newUser);
-                setInitializing(false);
-            });
-        const connectedRef = firebase.database().ref('.info/connected');
-        connectedRef.on('value', function(snap) {
-            if (snap.val() === true) {
-                setIsOnline(true);
-            } else {
-                setIsOnline(false);
-            }
-        });
-        return () => {
-            listener();
-        };
-    }, []);
-
     const getSheet = async sheetId => {
         try {
             setloading_getSheet(true);
 
-            const sheetRef = firebase.database().ref(`/sheets/${sheetId}`);
+            // Promises
+            const sheetNameRef = firebase
+                .database()
+                .ref(`/sheets/${sheetId}/name`);
 
-            const snapshotSheetPromise = sheetRef.once('value');
+            const expenses = [];
+            const expensesRef = getExpensesRef(sheetId);
 
-            const snapshotSheet = await snapshotSheetPromise;
+            const metadataRef = getMetadataRef(sheetId);
 
-            const sheetValue = snapshotSheet.val();
-            const array = Object.keys(sheetValue.expenses || {}).map(
-                id => sheetValue.expenses[id]
-            );
-            const expenses = formatData(array);
+            // Resolves
+            const snapshotSheetName = await sheetNameRef.once('value');
+            const sheetName = snapshotSheetName.val();
+
+            const snapshotExpenses = await expensesRef
+                .orderByChild('dateNeg')
+                .once('value');
+            snapshotExpenses.forEach(child => {
+                expenses.push(child.val());
+            });
+
+            const metadataSnapshot = await metadataRef.once('value');
+            const metadata = metadataSnapshot.val();
 
             setloading_getSheet(false);
+
             return {
-                ...sheetValue,
+                sheetId,
+                sheetName,
                 expenses,
-                expensesRaw: array
+                metadata
             };
         } catch (ex) {
             setloading_getSheet(false);
@@ -135,34 +103,21 @@ function useProvideExpenses() {
                 .database()
                 .ref(`/sheets/${sheetId}/expenses/${expenseId}`);
 
-            const snapshotExpensesPromise = expensesRef
-                .orderByChild('date')
-                .once('value');
-
-            const snapshotExpenses = await snapshotExpensesPromise;
+            const snapshotExpenses = await expensesRef.once('value');
 
             const expensesValue = snapshotExpenses.val();
-            const array = Object.keys(expensesValue || {}).map(
+            const expenses = Object.keys(expensesValue || {}).map(
                 id => expensesValue[id]
             );
-            const expenses = formatData(array);
 
             setloading_getExpenseById(false);
-            return {
-                expenses
-            };
+            return expenses.length ? expenses[0] : null;
         } catch (ex) {
             setloading_getExpenseById(false);
             console.log('Error getExpenseById', ex.message);
             alert('Error Refresh Expenses');
         }
     };
-
-    const getExpensesRef = sheetId =>
-        firebase.database().ref(`/sheets/${sheetId}/expenses`);
-
-    const getMetadataRef = sheetId =>
-        firebase.database().ref(`/sheets/${sheetId}/metadata`);
 
     const upsertExpense = async (
         sheetId,
@@ -489,9 +444,6 @@ function useProvideExpenses() {
         }
     };
 
-    const isFeatureEnabled = (metadata, feature) =>
-        metadata && metadata.features && metadata.features[feature];
-
     const login = async () => {
         const authenticationResult = await firebase
             .auth()
@@ -540,7 +492,6 @@ function useProvideExpenses() {
     return {
         getSheet,
         getExpenseById,
-        formatData,
         getExpensesRef,
         getMetadataRef,
 
@@ -561,7 +512,6 @@ function useProvideExpenses() {
 
         getFile,
 
-        isFeatureEnabled,
         isOnline,
 
         setUserSheets,
