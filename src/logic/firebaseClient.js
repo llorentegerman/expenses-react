@@ -12,6 +12,16 @@ const _rotateImage = async (path, angle) => {
     return addMessage({ path, angle });
 };
 
+const _config = {
+    apiKey: process.env.REACT_APP_apiKey,
+    authDomain: process.env.REACT_APP_authDomain,
+    databaseURL: process.env.REACT_APP_databaseURL,
+    projectId: process.env.REACT_APP_projectId,
+    storageBucket: process.env.REACT_APP_storageBucket,
+    messagingSenderId: process.env.REACT_APP_messagingSenderId,
+    appId: process.env.REACT_APP_appId
+};
+
 const addSheet = async ({ user, name }) => {
     const newSheetId = getNewSheetId();
     const newSheet = {};
@@ -50,8 +60,6 @@ const addSheet = async ({ user, name }) => {
         id: newSheetId,
         name: name || `sheet_${newSheetId}`
     };
-
-    // setUser(userUpdate);
 
     return newSheetId;
 };
@@ -117,6 +125,48 @@ const getSheet = async ({ sheetId }) => {
 };
 
 const getSheetName = ({ sheetId }) => _fetchData(`/sheets/${sheetId}/name`);
+
+const init = () => {
+    firebase.initializeApp(_config);
+    const googleProvider = new firebase.auth.GoogleAuthProvider();
+    return {
+        googleProvider
+    };
+};
+
+const login = async ({ googleProvider }) => {
+    const authenticationResult = await firebase
+        .auth()
+        .signInWithPopup(googleProvider);
+    if (
+        authenticationResult.additionalUserInfo &&
+        authenticationResult.additionalUserInfo.isNewUser
+    ) {
+        try {
+            const {
+                displayName,
+                email,
+                photoURL,
+                uid
+            } = authenticationResult.user;
+            const updates = {};
+            updates[`users/${authenticationResult.user.uid}`] = {
+                displayName,
+                email,
+                photoURL,
+                uid,
+                sheets: ''
+            };
+
+            await updateObject({ object: updates });
+        } catch (ex) {}
+    }
+};
+
+const logout = () => firebase.auth().signOut();
+
+const onAuthStateChanged = ({ callback }) =>
+    firebase.auth().onAuthStateChanged(callback);
 
 const refreshUser = async userUID => {
     const user = await _fetchData(`/users/${userUID}`);
@@ -271,6 +321,10 @@ export default {
     getRef,
     getSheet,
     getSheetName,
+    init,
+    login,
+    logout,
+    onAuthStateChanged,
     refreshUser,
     removeExpense,
     removeSheet,

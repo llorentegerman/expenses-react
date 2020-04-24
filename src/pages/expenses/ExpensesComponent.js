@@ -106,7 +106,10 @@ function ExpensesComponent() {
     }
 
     const sheetName =
-        user && user.sheets && user.sheets[match.params.sheetId].name;
+        user &&
+        user.sheets &&
+        user.sheets[match.params.sheetId] &&
+        user.sheets[match.params.sheetId].name;
 
     return (
         <LoadingComponent loading={loading} fullScreen>
