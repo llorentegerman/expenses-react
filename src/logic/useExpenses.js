@@ -1,5 +1,5 @@
 import React, { useState, useContext, createContext } from 'react';
-import { init as initFirebase, useFirebase } from './useFirebase';
+import useFirebase from './useFirebase';
 
 const expensesContext = createContext();
 
@@ -16,21 +16,24 @@ export const useExpenses = () => {
     return useContext(expensesContext);
 };
 
-const { firebase, googleProvider } = initFirebase();
-
 function useProvideExpenses() {
     const {
-        getExpensesRef,
-        getMetadataRef,
+        firebase,
+        getExpenses,
+        getExpenseById,
+        getMetadata,
+        getNewExpenseId,
+        getSheetName,
+        googleProvider,
         initializing,
         isOnline,
         refreshUser,
+        removeExpense: _removeExpense,
         setUser,
         user
     } = useFirebase();
 
     const [loading_getSheet, setloading_getSheet] = useState(false);
-    const [loading_getExpenseById, setloading_getExpenseById] = useState(false);
     const [loading_upsertExpense, setloading_upsertExpense] = useState(false);
     const [loading_removeExpense, setloading_removeExpense] = useState(false);
     const [loading_addSheet, setloading_addSheet] = useState(false);
@@ -41,44 +44,19 @@ function useProvideExpenses() {
     const [loading_setSheetName, setloading_setSheetName] = useState(false);
     const [loading_setUserSheets, setloading_setUserSheets] = useState(false);
 
-    // useEffect(() => {
-    //     let newUser = null;
-    //     refreshUser('QjRiOvbUTpZFFaWLgM48UF5YPBG3').then(
-    //         async refreshResponse => {
-    //             newUser = refreshResponse.user;
-    //             setUser(newUser);
-    //             setInitializing(false);
-    //         }
-    //     );
-    // }, []);
-
     const getSheet = async sheetId => {
         try {
             setloading_getSheet(true);
 
             // Promises
-            const sheetNameRef = firebase
-                .database()
-                .ref(`/sheets/${sheetId}/name`);
-
-            const expenses = [];
-            const expensesRef = getExpensesRef(sheetId);
-
-            const metadataRef = getMetadataRef(sheetId);
+            const getExpensesPromise = getExpenses({ sheetId });
+            const getMetadataPromise = getMetadata({ sheetId });
+            const getSheetNamePromise = getSheetName({ sheetId });
 
             // Resolves
-            const snapshotSheetName = await sheetNameRef.once('value');
-            const sheetName = snapshotSheetName.val();
-
-            const snapshotExpenses = await expensesRef
-                .orderByChild('dateNeg')
-                .once('value');
-            snapshotExpenses.forEach(child => {
-                expenses.push(child.val());
-            });
-
-            const metadataSnapshot = await metadataRef.once('value');
-            const metadata = metadataSnapshot.val();
+            const expenses = await getExpensesPromise;
+            const metadata = await getMetadataPromise;
+            const sheetName = await getSheetNamePromise;
 
             setloading_getSheet(false);
 
@@ -95,48 +73,39 @@ function useProvideExpenses() {
         }
     };
 
-    const getExpenseById = async (sheetId, expenseId) => {
-        try {
-            setloading_getExpenseById(true);
+    const getSheet2 = async ({ sheetId }) => {
+        // Promises
+        const getExpensesPromise = getExpenses({ sheetId });
+        const getMetadataPromise = getMetadata({ sheetId });
+        const getSheetNamePromise = getSheetName({ sheetId });
 
-            const expensesRef = firebase
-                .database()
-                .ref(`/sheets/${sheetId}/expenses/${expenseId}`);
+        // Resolves
+        const expenses = await getExpensesPromise;
+        const metadata = await getMetadataPromise;
+        const sheetName = await getSheetNamePromise;
 
-            const snapshotExpenses = await expensesRef.once('value');
-
-            const expensesValue = snapshotExpenses.val();
-            const expenses = Object.keys(expensesValue || {}).map(
-                id => expensesValue[id]
-            );
-
-            setloading_getExpenseById(false);
-            return expenses.length ? expenses[0] : null;
-        } catch (ex) {
-            setloading_getExpenseById(false);
-            console.log('Error getExpenseById', ex.message);
-            alert('Error Refresh Expenses');
-        }
+        return {
+            sheetId,
+            sheetName,
+            expenses,
+            metadata
+        };
     };
 
-    const upsertExpense = async (
+    const upsertExpense = async ({
         sheetId,
-        { files = [], ...item },
+        item: { files = [], ...item },
         metadata
-    ) => {
+    }) => {
         setloading_upsertExpense(true);
         try {
-            const newId =
-                item.id ||
-                firebase
-                    .database()
-                    .ref()
-                    .child(`sheets/${sheetId}`)
-                    .push().key;
+            const newId = item.id || getNewExpenseId({ sheetId });
             const newExpense = { id: newId, files: [], ...item };
+
             let tags = (newExpense.tags || '').split(',');
             tags = tags.map(t => t.trim()).filter(t => !!t);
             newExpense.tags = tags.join(',');
+
             const updates = {};
             updates[`sheets/${sheetId}/expenses/${newId}`] = newExpense;
 
@@ -233,14 +202,10 @@ function useProvideExpenses() {
         }
     };
 
-    const removeExpense = async (sheetId, id) => {
+    const removeExpense = async (sheetId, expenseId) => {
         try {
             setloading_removeExpense(true);
-            await firebase
-                .database()
-                .ref()
-                .child(`sheets/${sheetId}/expenses/${id}`)
-                .remove();
+            await _removeExpense({ sheetId, expenseId });
 
             setloading_removeExpense(false);
         } catch (ex) {
@@ -391,7 +356,7 @@ function useProvideExpenses() {
         }
     };
 
-    const setSheetName = async (sheetId, name) => {
+    const setSheetName = async ({ sheetId, name }) => {
         setloading_setSheetName(true);
         try {
             await firebase
@@ -429,7 +394,7 @@ function useProvideExpenses() {
         }
     };
 
-    const setMetadata = async (sheetId, type, items) => {
+    const setMetadata = async ({ sheetId, type, items }) => {
         setloading_setSection(true);
         try {
             await firebase
@@ -491,9 +456,10 @@ function useProvideExpenses() {
 
     return {
         getSheet,
+        getSheet2,
+        getSheetName,
+        getMetadata,
         getExpenseById,
-        getExpensesRef,
-        getMetadataRef,
 
         upsertExpense,
         removeExpense,
@@ -526,8 +492,7 @@ function useProvideExpenses() {
             loading_setSection ||
             loading_setSheetName ||
             loading_getSheet ||
-            loading_setUserSheets ||
-            loading_getExpenseById,
+            loading_setUserSheets,
         loadings: {
             loading_upsertExpense,
             removeExpense: loading_removeExpense,
@@ -538,8 +503,7 @@ function useProvideExpenses() {
             setCategories: loading_setSection,
             setSheetName: loading_setSheetName,
             setUserSheets: loading_setUserSheets,
-            loading_getSheet,
-            loading_getExpenseById
+            loading_getSheet
         }
     };
 }

@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useFirebase } from './useFirebase';
+import useFirebase from './useFirebase';
 import { useExpenses } from './useExpenses';
 import { sortExpensesByDate } from './utilities';
 
 export function useSheetChangesSubscription(sheetId) {
-    const { user, logout, getSheet } = useExpenses();
-
     const { getExpensesRef, getMetadataRef } = useFirebase();
+
+    const { user, logout, getSheet } = useExpenses();
 
     const [expenses, setExpenses] = useState([]);
     const [statistics, setStatistics] = useState({});
@@ -34,8 +34,8 @@ export function useSheetChangesSubscription(sheetId) {
             if (!sheet) {
                 logout();
             } else {
-                expensesRef = getExpensesRef(sheetId);
-                metadataRef = getMetadataRef(sheetId);
+                expensesRef = getExpensesRef({ sheetId });
+                metadataRef = getMetadataRef({ sheetId });
                 expensesRef.on('child_added', childSnapshot => {
                     if (isInitialFetch) {
                         return;
@@ -50,6 +50,7 @@ export function useSheetChangesSubscription(sheetId) {
                     if (isInitialFetch) {
                         return;
                     }
+
                     const dataIndex = _rawData.findIndex(
                         d => d.id === childSnapshot.key
                     );

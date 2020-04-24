@@ -11,23 +11,37 @@ const config = {
     appId: process.env.REACT_APP_appId
 };
 
-export const init = () => {
-    firebase.initializeApp(config);
-    const googleProvider = new firebase.auth.GoogleAuthProvider();
+let initialized = false;
+let googleProvider;
 
+const init = () => {
+    if (initialized) return { firebase, googleProvider };
+    firebase.initializeApp(config);
+    googleProvider = new firebase.auth.GoogleAuthProvider();
+    initialized = true;
     return {
         firebase,
         googleProvider
     };
 };
 
-export const useFirebase = () => {
+export default () => {
     const [isOnline, setIsOnline] = useState(true);
     const [user, setUser] = useState(null);
     const [initializing, setInitializing] = useState(true);
 
+    const getRef = path => firebase.database().ref(path);
+
+    const fetchData = async path => {
+        const reference = getRef(path);
+        const snapshot = await reference.once('value');
+        const value = snapshot.val();
+        return value;
+    };
+
     useEffect(() => {
-        const connectedRef = firebase.database().ref('.info/connected');
+        init();
+        const connectedRef = getRef('.info/connected');
         connectedRef.on('value', snap => {
             if (snap.val() === true) {
                 setIsOnline(true);
@@ -52,15 +66,11 @@ export const useFirebase = () => {
         return () => {
             listener();
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [setInitializing]);
 
     const refreshUser = async userUID => {
-        const user = (
-            await firebase
-                .database()
-                .ref(`/users/${userUID}`)
-                .once('value')
-        ).val();
+        const user = await fetchData(`/users/${userUID}`);
         user.uid = userUID;
 
         return {
@@ -68,18 +78,56 @@ export const useFirebase = () => {
         };
     };
 
-    const getExpensesRef = sheetId =>
-        firebase.database().ref(`/sheets/${sheetId}/expenses`);
+    const getExpensesRef = ({ sheetId }) =>
+        getRef(`/sheets/${sheetId}/expenses`);
 
-    const getMetadataRef = sheetId =>
-        firebase.database().ref(`/sheets/${sheetId}/metadata`);
+    const getMetadataRef = ({ sheetId }) =>
+        getRef(`/sheets/${sheetId}/metadata`);
+
+    const getSheetName = ({ sheetId }) => fetchData(`/sheets/${sheetId}/name`);
+
+    const getExpenses = async ({ sheetId }) => {
+        const expenses = [];
+        const expensesRef = getExpensesRef({ sheetId });
+        const snapshotExpenses = await expensesRef
+            .orderByChild('dateNeg')
+            .once('value');
+        snapshotExpenses.forEach(child => {
+            expenses.push(child.val());
+        });
+        return expenses;
+    };
+
+    const getExpenseById = ({ sheetId, expenseId }) =>
+        fetchData(`/sheets/${sheetId}/expenses/${expenseId}`);
+
+    const getMetadata = async ({ sheetId }) =>
+        fetchData(`/sheets/${sheetId}/metadata`);
+
+    const getNewExpenseId = ({ sheetId }) =>
+        getRef()
+            .child(`sheets/${sheetId}`)
+            .push().key;
+
+    const removeExpense = ({ sheetId, expenseId }) =>
+        getRef()
+            .child(`sheets/${sheetId}/expenses/${expenseId}`)
+            .remove();
 
     return {
+        firebase,
+        getExpenses,
+        getExpenseById,
         getExpensesRef,
+        getMetadata,
         getMetadataRef,
+        getNewExpenseId,
+        getSheetName,
+        googleProvider,
         initializing,
         isOnline,
         refreshUser,
+        removeExpense,
         setUser,
         user
     };

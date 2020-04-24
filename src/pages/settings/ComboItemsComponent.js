@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import useReactRouter from 'use-react-router';
 import { StyleSheet, css } from 'aphrodite';
 import { Column } from 'simple-flexbox';
+import { useAsync } from 'react-async';
 import { useExpenses } from '../../logic/useExpenses';
 import { LoadingComponent } from '../../commons/InitializingComponent';
 import SortableListComponent from './SortableListComponent';
@@ -39,34 +40,20 @@ const styles = StyleSheet.create({
 function ComboItemsComponent({ title, type, options = {} }) {
     const { history, match } = useReactRouter();
     const {
-        getSheet,
-        logout,
+        getMetadata,
         setMetadata,
-        user,
-        loadings: { loading_getSheet, loading_setSection }
+        loadings: { loading_setSection }
     } = useExpenses();
 
-    const [metadata, setMetadataLocal] = useState([]);
     const [items, setItems] = useState([]);
     const [currentType, setCurrentType] = useState([]);
 
-    useEffect(() => window.scrollTo(0, 0), []);
+    const { data: metadata, error, isPending: loadingMetadata } = useAsync({
+        promiseFn: getMetadata,
+        sheetId: match.params.sheetId
+    });
 
-    useEffect(() => {
-        const getSheetFetch = async sheetId => {
-            const getSheetResponse = await getSheet(sheetId, { page: 0 });
-            setMetadataLocal(getSheetResponse.metadata);
-        };
-        if (match.params.sheetId && user) {
-            const sheet = user.sheets[match.params.sheetId];
-            if (!sheet) {
-                logout();
-            } else {
-                getSheetFetch(match.params.sheetId);
-            }
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [match.params.sheetId]);
+    useEffect(() => window.scrollTo(0, 0), []);
 
     useEffect(() => {
         if (
@@ -93,15 +80,23 @@ function ComboItemsComponent({ title, type, options = {} }) {
             };
         });
 
-        await setMetadata(match.params.sheetId, type, newItems);
+        await setMetadata({
+            sheetId: match.params.sheetId,
+            type,
+            items: newItems
+        });
         history.push(`/sheet/${match.params.sheetId}`);
     };
 
     const onClose = () => history.push(`/sheet/${match.params.sheetId}`);
 
+    if (error) {
+        return <span className={css(styles.title)}>Error: {error}</span>;
+    }
+
     return (
         <LoadingComponent
-            loading={loading_getSheet || loading_setSection}
+            loading={loadingMetadata || loading_setSection}
             fullScreen
         >
             <Column>

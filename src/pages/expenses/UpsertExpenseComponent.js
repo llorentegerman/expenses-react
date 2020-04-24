@@ -3,6 +3,7 @@ import { StyleSheet, css } from 'aphrodite';
 import useReactRouter from 'use-react-router';
 import { Column, Row } from 'simple-flexbox';
 import useForm from 'react-hook-form';
+import { useAsync } from 'react-async';
 import DatePicker from 'react-datepicker';
 import ReactTags from 'react-tag-autocomplete';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -43,13 +44,12 @@ const styles = StyleSheet.create({
 
 function AddExpenseComponent() {
     const {
+        getExpenseById,
         getFile,
-        getSheet,
+        getMetadata,
         initializing,
-        loadings: { loading_getSheet, loading_upsertExpense },
-        logout,
-        upsertExpense,
-        user
+        loadings: { loading_upsertExpense },
+        upsertExpense
     } = useExpenses();
     const { history, match } = useReactRouter();
     const editMode = match.path === '/sheet/:sheetId/edit/:expenseId';
@@ -60,30 +60,21 @@ function AddExpenseComponent() {
         }
     });
 
-    const [sheet, setSheet] = useState();
+    const { data: expense, isPending: loadingExpense } = useAsync({
+        promiseFn: getExpenseById,
+        sheetId: match.params.sheetId,
+        expenseId: match.params.expenseId
+    });
+
+    const { data: metadata, isPending: loadingMetadata } = useAsync({
+        promiseFn: getMetadata,
+        sheetId: match.params.sheetId
+    });
+
     const [defaultExpense, setDefaultExpense] = useState();
 
     const [files, setFiles] = useState([]);
     const [filesChanged, setFilesChanged] = useState(0);
-
-    useEffect(() => {
-        window.scrollTo(0, 0);
-        const getSheetFetch = async sheetId => {
-            const getSheetResponse = await getSheet(sheetId);
-            setSheet(getSheetResponse);
-        };
-        if (match.params.sheetId && user) {
-            const sheet = user.sheets[match.params.sheetId];
-            if (!sheet) {
-                logout();
-            } else {
-                getSheetFetch(match.params.sheetId);
-            }
-        } else {
-            setSheet();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [match.params.sheetId]);
 
     useEffect(() => {
         const loadFiles = async filteredExpense => {
@@ -127,22 +118,22 @@ function AddExpenseComponent() {
             setFiles(newFiles);
         };
 
-        if (!initializing && !loading_getSheet && sheet && !defaultExpense) {
-            const metadata = sheet.metadata;
+        if (!initializing && !loadingExpense && !defaultExpense && metadata) {
             if (editMode) {
-                const filteredExpense = sheet.expenses.find(
-                    e => e.id === match.params.expenseId
-                );
-                if (!filteredExpense) {
-                    setDefaultExpense({ date: new Date() });
+                if (!expense) {
+                    const newDefault = { date: new Date() };
+                    setDefaultExpense(newDefault);
+                    reset(newDefault);
                 } else {
-                    setDefaultExpense({
-                        ...filteredExpense,
-                        date: new Date(+filteredExpense.date)
-                    });
-                    loadFiles(filteredExpense);
+                    const newDefault = {
+                        ...expense,
+                        date: new Date(+expense.date)
+                    };
+                    setDefaultExpense(newDefault);
+                    reset(newDefault);
+                    loadFiles(expense);
                 }
-            } else if (metadata) {
+            } else {
                 const cities = Object.keys(metadata.cities || {});
                 const defaultCity = cities.find(
                     c => metadata.cities[c].default
@@ -183,27 +174,28 @@ function AddExpenseComponent() {
                         metadata.methods[b].position
                 );
 
-                setDefaultExpense({
+                const newDefault = {
                     date: new Date(),
-                    city: defaultCity || '',
-                    category: defaultCategory || '',
-                    currency: defaultCurrency || '',
-                    method: defaultMethod || ''
-                });
+                    city: defaultCity,
+                    category: defaultCategory,
+                    currency: defaultCurrency,
+                    method: defaultMethod
+                };
+                setDefaultExpense(newDefault);
+                reset(newDefault);
             }
         }
     }, [
         editMode,
         match.params.expenseId,
         initializing,
-        loading_getSheet,
-        sheet,
+        loadingExpense,
         getFile,
-        defaultExpense
+        expense,
+        metadata,
+        defaultExpense,
+        reset
     ]);
-
-    const metadata = sheet && sheet.metadata;
-    const expenses = sheet && sheet.expenses;
 
     const cities = useMemo(() => {
         if (metadata && metadata.cities) {
@@ -257,15 +249,17 @@ function AddExpenseComponent() {
         return [];
     }, [metadata]);
 
-    useEffect(() => {
-        if (defaultExpense) {
-            reset(defaultExpense);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [defaultExpense, reset]);
-
-    if (!expenses || !metadata) {
-        return <div></div>;
+    if (!metadata) {
+        return (
+            <LoadingComponent
+                loading={
+                    loadingExpense || loading_upsertExpense || loadingMetadata
+                }
+                fullScreen
+            >
+                <div></div>
+            </LoadingComponent>
+        );
     }
 
     const onSave = async ({ date, ...data }) => {
@@ -278,7 +272,11 @@ function AddExpenseComponent() {
             newData.id = match.params.expenseId;
         }
         newData.files = files;
-        await upsertExpense(match.params.sheetId, newData, sheet.metadata);
+        await upsertExpense({
+            sheetId: match.params.sheetId,
+            item: newData,
+            metadata
+        });
         reset();
         history.push(`/sheet/${match.params.sheetId}`);
     };
@@ -299,7 +297,7 @@ function AddExpenseComponent() {
 
     return (
         <LoadingComponent
-            loading={loading_getSheet || loading_upsertExpense}
+            loading={loadingExpense || loading_upsertExpense || loadingMetadata}
             fullScreen
         >
             <Column style={{ padding: 25, marginTop: 5 }} horizontal="center">
@@ -451,7 +449,7 @@ function AddExpenseComponent() {
                     />
                     {renderError('method')}
 
-                    {(!editMode || (editMode && defaultExpense)) && (
+                    {(!editMode || (editMode && expense)) && (
                         <ImageUploadComponent
                             onChange={newFiles => {
                                 setFilesChanged(filesChanged + 1);
@@ -462,7 +460,7 @@ function AddExpenseComponent() {
                             hasFiles={
                                 !editMode
                                     ? false
-                                    : (defaultExpense.files || []).length > 0
+                                    : (expense.files || []).length > 0
                             }
                         />
                     )}
