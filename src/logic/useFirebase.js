@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import firebase from 'firebase';
+import firebaseClient from './firebaseClient';
 
 const config = {
     apiKey: process.env.REACT_APP_apiKey,
@@ -30,18 +31,9 @@ export default () => {
     const [user, setUser] = useState(null);
     const [initializing, setInitializing] = useState(true);
 
-    const getRef = path => firebase.database().ref(path);
-
-    const fetchData = async path => {
-        const reference = getRef(path);
-        const snapshot = await reference.once('value');
-        const value = snapshot.val();
-        return value;
-    };
-
     useEffect(() => {
         init();
-        const connectedRef = getRef('.info/connected');
+        const connectedRef = firebaseClient.getRef('.info/connected');
         connectedRef.on('value', snap => {
             if (snap.val() === true) {
                 setIsOnline(true);
@@ -57,7 +49,9 @@ export default () => {
             .onAuthStateChanged(async loggedUser => {
                 let newUser = null;
                 if (loggedUser) {
-                    const refreshResponse = await refreshUser(loggedUser.uid);
+                    const refreshResponse = await firebaseClient.refreshUser(
+                        loggedUser.uid
+                    );
                     newUser = refreshResponse.user;
                 }
                 setUser(newUser);
@@ -69,66 +63,56 @@ export default () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [setInitializing]);
 
-    const refreshUser = async userUID => {
-        const user = await fetchData(`/users/${userUID}`);
-        user.uid = userUID;
-
-        return {
-            user
-        };
+    const refreshUser = async () => {
+        if (!user) {
+            return;
+        }
+        const refreshResponse = await firebaseClient.refreshUser(user.uid);
+        setUser(refreshResponse.user);
     };
 
-    const getExpensesRef = ({ sheetId }) =>
-        getRef(`/sheets/${sheetId}/expenses`);
+    const login = async () => {
+        const authenticationResult = await firebase
+            .auth()
+            .signInWithPopup(googleProvider);
+        if (
+            authenticationResult.additionalUserInfo &&
+            authenticationResult.additionalUserInfo.isNewUser
+        ) {
+            try {
+                const {
+                    displayName,
+                    email,
+                    photoURL,
+                    uid
+                } = authenticationResult.user;
+                const updates = {};
+                updates[`users/${authenticationResult.user.uid}`] = {
+                    displayName,
+                    email,
+                    photoURL,
+                    uid,
+                    sheets: ''
+                };
 
-    const getMetadataRef = ({ sheetId }) =>
-        getRef(`/sheets/${sheetId}/metadata`);
-
-    const getSheetName = ({ sheetId }) => fetchData(`/sheets/${sheetId}/name`);
-
-    const getExpenses = async ({ sheetId }) => {
-        const expenses = [];
-        const expensesRef = getExpensesRef({ sheetId });
-        const snapshotExpenses = await expensesRef
-            .orderByChild('dateNeg')
-            .once('value');
-        snapshotExpenses.forEach(child => {
-            expenses.push(child.val());
-        });
-        return expenses;
+                await firebase
+                    .database()
+                    .ref()
+                    .update(updates);
+            } catch (ex) {}
+        }
     };
 
-    const getExpenseById = ({ sheetId, expenseId }) =>
-        fetchData(`/sheets/${sheetId}/expenses/${expenseId}`);
-
-    const getMetadata = async ({ sheetId }) =>
-        fetchData(`/sheets/${sheetId}/metadata`);
-
-    const getNewExpenseId = ({ sheetId }) =>
-        getRef()
-            .child(`sheets/${sheetId}`)
-            .push().key;
-
-    const removeExpense = ({ sheetId, expenseId }) =>
-        getRef()
-            .child(`sheets/${sheetId}/expenses/${expenseId}`)
-            .remove();
+    const logout = () => firebase.auth().signOut();
 
     return {
         firebase,
-        getExpenses,
-        getExpenseById,
-        getExpensesRef,
-        getMetadata,
-        getMetadataRef,
-        getNewExpenseId,
-        getSheetName,
         googleProvider,
         initializing,
         isOnline,
+        login,
+        logout,
         refreshUser,
-        removeExpense,
-        setUser,
         user
     };
 };

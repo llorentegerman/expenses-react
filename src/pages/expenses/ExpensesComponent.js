@@ -57,11 +57,8 @@ const styles = StyleSheet.create({
 
 function ExpensesComponent() {
     const { history, match } = useReactRouter();
-    const {
-        user,
-        loadings: { loading_getSheet }
-    } = useExpenses();
-    const { expenses, statistics, tags } = useSheetChangesSubscription(
+    const { user } = useExpenses();
+    const { expenses, loading, statistics, tags } = useSheetChangesSubscription(
         match.params.sheetId
     );
     const [expensesFiltered, setExpensesFiltered] = useState([]);
@@ -112,7 +109,7 @@ function ExpensesComponent() {
         user && user.sheets && user.sheets[match.params.sheetId].name;
 
     return (
-        <LoadingComponent loading={loading_getSheet} fullScreen>
+        <LoadingComponent loading={loading} fullScreen>
             <Column horizontal="center">
                 <Row
                     style={{ width: '100%' }}

@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react';
-import useFirebase from './useFirebase';
+import firebaseClient from './firebaseClient';
 import { useExpenses } from './useExpenses';
 import { sortExpensesByDate } from './utilities';
 
 export function useSheetChangesSubscription(sheetId) {
-    const { getExpensesRef, getMetadataRef } = useFirebase();
-
-    const { user, logout, getSheet } = useExpenses();
+    const { user, logout } = useExpenses();
 
     const [expenses, setExpenses] = useState([]);
     const [statistics, setStatistics] = useState({});
     const [tags, setTags] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         let expensesRef;
@@ -21,21 +20,22 @@ export function useSheetChangesSubscription(sheetId) {
         let _metadata = {};
 
         const getSheetFetch = async sheetId => {
-            const getSheetResponse = await getSheet(sheetId);
+            const getSheetResponse = await firebaseClient.getSheet({ sheetId });
             setExpenses(getSheetResponse.expenses);
             setStatistics(getSheetResponse.metadata.statistics);
             setTags(getSheetResponse.metadata.tags);
             _rawData = getSheetResponse.expenses;
             _metadata = getSheetResponse.metadata;
             isInitialFetch = false;
+            setLoading(false);
         };
         if (sheetId && user) {
             const sheet = user.sheets[sheetId];
             if (!sheet) {
                 logout();
             } else {
-                expensesRef = getExpensesRef({ sheetId });
-                metadataRef = getMetadataRef({ sheetId });
+                expensesRef = firebaseClient.getExpensesRef({ sheetId });
+                metadataRef = firebaseClient.getMetadataRef({ sheetId });
                 expensesRef.on('child_added', childSnapshot => {
                     if (isInitialFetch) {
                         return;
@@ -118,6 +118,7 @@ export function useSheetChangesSubscription(sheetId) {
 
     return {
         expenses,
+        loading,
         statistics,
         tags
     };

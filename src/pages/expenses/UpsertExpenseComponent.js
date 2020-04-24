@@ -8,6 +8,7 @@ import DatePicker from 'react-datepicker';
 import ReactTags from 'react-tag-autocomplete';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useExpenses } from '../../logic/useExpenses';
+import firebaseClient from '../../logic/firebaseClient';
 import { LoadingComponent } from '../../commons/InitializingComponent';
 import ImageUploadComponent from '../../commons/ImageUpload';
 import AutosuggestCustom from '../../commons/AutosuggestCustom';
@@ -43,14 +44,7 @@ const styles = StyleSheet.create({
 });
 
 function AddExpenseComponent() {
-    const {
-        getExpenseById,
-        getFile,
-        getMetadata,
-        initializing,
-        loadings: { loading_upsertExpense },
-        upsertExpense
-    } = useExpenses();
+    const { getFile, initializing } = useExpenses();
     const { history, match } = useReactRouter();
     const editMode = match.path === '/sheet/:sheetId/edit/:expenseId';
 
@@ -61,17 +55,18 @@ function AddExpenseComponent() {
     });
 
     const { data: expense, isPending: loadingExpense } = useAsync({
-        promiseFn: getExpenseById,
+        promiseFn: firebaseClient.getExpenseById,
         sheetId: match.params.sheetId,
         expenseId: match.params.expenseId
     });
 
     const { data: metadata, isPending: loadingMetadata } = useAsync({
-        promiseFn: getMetadata,
+        promiseFn: firebaseClient.getMetadata,
         sheetId: match.params.sheetId
     });
 
     const [defaultExpense, setDefaultExpense] = useState();
+    const [loadingUpsert, setLoadingUpsert] = useState(false);
 
     const [files, setFiles] = useState([]);
     const [filesChanged, setFilesChanged] = useState(0);
@@ -84,7 +79,9 @@ function AddExpenseComponent() {
                 let url = expenseFiles[i].url;
                 let publicUrl = url;
                 try {
-                    publicUrl = await getFile(expenseFiles[i].url);
+                    publicUrl = await firebaseClient.getFile(
+                        expenseFiles[i].url
+                    );
                 } catch (e) {}
 
                 if (!isFileAnImage(expenseFiles[i])) {
@@ -106,7 +103,9 @@ function AddExpenseComponent() {
                 )}`;
                 let thumb = `${thumbFolder}${thumbFilename}`;
                 try {
-                    thumb = await getFile(`${thumbFolder}${thumbFilename}`);
+                    thumb = await firebaseClient.getFile(
+                        `${thumbFolder}${thumbFilename}`
+                    );
                 } catch (e) {}
                 newFiles.push({
                     url,
@@ -252,9 +251,7 @@ function AddExpenseComponent() {
     if (!metadata) {
         return (
             <LoadingComponent
-                loading={
-                    loadingExpense || loading_upsertExpense || loadingMetadata
-                }
+                loading={loadingExpense || loadingUpsert || loadingMetadata}
                 fullScreen
             >
                 <div></div>
@@ -272,7 +269,8 @@ function AddExpenseComponent() {
             newData.id = match.params.expenseId;
         }
         newData.files = files;
-        await upsertExpense({
+        setLoadingUpsert(true);
+        await firebaseClient.upsertExpense({
             sheetId: match.params.sheetId,
             item: newData,
             metadata
@@ -297,7 +295,7 @@ function AddExpenseComponent() {
 
     return (
         <LoadingComponent
-            loading={loadingExpense || loading_upsertExpense || loadingMetadata}
+            loading={loadingExpense || loadingUpsert || loadingMetadata}
             fullScreen
         >
             <Column style={{ padding: 25, marginTop: 5 }} horizontal="center">

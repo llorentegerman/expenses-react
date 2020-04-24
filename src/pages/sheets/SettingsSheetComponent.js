@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, css } from 'aphrodite';
 import useReactRouter from 'use-react-router';
 import { useAsync } from 'react-async';
 import useForm from 'react-hook-form';
 import { Column, Row } from 'simple-flexbox';
 import { useExpenses } from '../../logic/useExpenses';
+import firebaseClient from '../../logic/firebaseClient';
 import { LoadingComponent } from '../../commons/InitializingComponent';
 
 const styles = StyleSheet.create({
@@ -36,17 +37,14 @@ const styles = StyleSheet.create({
 
 function SettingsComponent() {
     const { history, match } = useReactRouter();
-    const {
-        user,
-        getSheetName,
-        setSheetName,
-        loadings: { setSheetName: loading_setSheetName }
-    } = useExpenses();
+    const { user, refreshUser } = useExpenses();
+
+    const [loading, setLoading] = useState(false);
 
     const { errors, handleSubmit, register, reset } = useForm();
 
     const { data: sheetName, isPending: loadingSheetName } = useAsync({
-        promiseFn: getSheetName,
+        promiseFn: firebaseClient.getSheetName,
         sheetId: match.params.sheetId
     });
 
@@ -62,7 +60,14 @@ function SettingsComponent() {
     }, [sheetName, user]);
 
     const onSave = async ({ name }) => {
-        setSheetName({ sheetId: match.params.sheetId, name });
+        setLoading(true);
+
+        await firebaseClient.setSheetName({
+            userId: user.uid,
+            sheetId: match.params.sheetId,
+            sheetName: name
+        });
+        await refreshUser();
         reset();
         history.push(`/sheet/${match.params.sheetId}`);
     };
@@ -77,10 +82,7 @@ function SettingsComponent() {
         );
 
     return (
-        <LoadingComponent
-            loading={loadingSheetName || loading_setSheetName}
-            fullScreen
-        >
+        <LoadingComponent loading={loadingSheetName || loading} fullScreen>
             <Column>
                 <span className={css(styles.title)}>Settings</span>
 

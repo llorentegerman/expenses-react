@@ -3,7 +3,7 @@ import useReactRouter from 'use-react-router';
 import { StyleSheet, css } from 'aphrodite';
 import { Column } from 'simple-flexbox';
 import { useAsync } from 'react-async';
-import { useExpenses } from '../../logic/useExpenses';
+import firebaseClient from '../../logic/firebaseClient';
 import { LoadingComponent } from '../../commons/InitializingComponent';
 import SortableListComponent from './SortableListComponent';
 
@@ -39,17 +39,13 @@ const styles = StyleSheet.create({
 
 function ComboItemsComponent({ title, type, options = {} }) {
     const { history, match } = useReactRouter();
-    const {
-        getMetadata,
-        setMetadata,
-        loadings: { loading_setSection }
-    } = useExpenses();
 
+    const [loading, setLoading] = useState(false);
     const [items, setItems] = useState([]);
     const [currentType, setCurrentType] = useState([]);
 
     const { data: metadata, error, isPending: loadingMetadata } = useAsync({
-        promiseFn: getMetadata,
+        promiseFn: firebaseClient.getMetadata,
         sheetId: match.params.sheetId
     });
 
@@ -79,8 +75,8 @@ function ComboItemsComponent({ title, type, options = {} }) {
                 position: index
             };
         });
-
-        await setMetadata({
+        setLoading(true);
+        await firebaseClient.setMetadata({
             sheetId: match.params.sheetId,
             type,
             items: newItems
@@ -95,10 +91,7 @@ function ComboItemsComponent({ title, type, options = {} }) {
     }
 
     return (
-        <LoadingComponent
-            loading={loadingMetadata || loading_setSection}
-            fullScreen
-        >
+        <LoadingComponent loading={loadingMetadata || loading} fullScreen>
             <Column>
                 <span className={css(styles.title)}>{title}</span>
                 <span className={css(styles.subtitle)}>

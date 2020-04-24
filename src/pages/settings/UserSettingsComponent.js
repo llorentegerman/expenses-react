@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, css } from 'aphrodite';
 import { Column } from 'simple-flexbox';
 import useReactRouter from 'use-react-router';
 import { LoadingComponent } from '../../commons/InitializingComponent';
 import SortableListComponent from './SortableListComponent';
+import firebaseClient from '../../logic/firebaseClient';
 import { useExpenses } from '../../logic/useExpenses';
 
 const styles = StyleSheet.create({
@@ -21,12 +22,9 @@ const styles = StyleSheet.create({
 
 function UserSettingsComponent() {
     const { history } = useReactRouter();
-    const {
-        initializing,
-        loading_setUserSheets,
-        setUserSheets,
-        user
-    } = useExpenses();
+    const { initializing, refreshUser, user } = useExpenses();
+
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => window.scrollTo(0, 0), []);
 
@@ -44,7 +42,12 @@ function UserSettingsComponent() {
                 position: index
             };
         });
-        await setUserSheets(newItems);
+        setLoading(true);
+        await firebaseClient.setUserSheets({
+            userId: user.uid,
+            sheets: newItems
+        });
+        await refreshUser();
         history.push('/dashboard');
     };
 
@@ -67,7 +70,7 @@ function UserSettingsComponent() {
         })
         .sort((a, b) => a.position - b.position);
     return (
-        <LoadingComponent loading={loading_setUserSheets} fullScreen>
+        <LoadingComponent loading={loading} fullScreen>
             <Column>
                 <span className={css(styles.title)}>Settings</span>
                 <Column className={css(styles.section)}>

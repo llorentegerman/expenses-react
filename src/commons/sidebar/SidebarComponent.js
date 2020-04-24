@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, css } from 'aphrodite';
 import useReactRouter from 'use-react-router';
 import { useExpenses } from '../../logic/useExpenses';
+import { LoadingComponent } from '../InitializingComponent';
 import LogoComponent from './LogoComponent';
 import MenuItemComponent from './MenuItemComponent';
 import IconOverview from '../../assets/icon-overview.js';
@@ -70,7 +71,8 @@ const styles = {
 
 function SidebarComponent() {
     const { history, location } = useReactRouter();
-    const { logout, user } = useExpenses();
+    const { initializing, logout, user } = useExpenses();
+    const [loading, setLoading] = useState(false);
     const [expanded, setExpanded] = useState(false);
     const [selectedItem, setSelectedItem] = useState(location.pathname);
 
@@ -103,6 +105,11 @@ function SidebarComponent() {
 
     const isMobileValue = isMobile();
 
+    const doLogout = () => {
+        setLoading(true);
+        logout();
+    };
+
     return (
         <Menu
             isOpen={!isMobileValue || expanded}
@@ -110,6 +117,7 @@ function SidebarComponent() {
             disableCloseOnEsc
             styles={styles}
         >
+            <LoadingComponent loading={initializing || loading} fullScreen />
             <div style={{ paddingTop: 30, paddingBottom: 30 }}>
                 <LogoComponent />
             </div>
@@ -253,7 +261,7 @@ function SidebarComponent() {
             <MenuItemComponent
                 title="Logout"
                 icon={IconLogout}
-                onClick={() => logout()}
+                onClick={() => doLogout()}
             />
         </Menu>
     );
