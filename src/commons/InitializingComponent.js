@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
         height: '100%',
         minHeight: '100vh',
         width: 'calc(100% - 0px)',
-        position: 'absolute',
+        position: 'fixed',
         top: 0,
         left: 0,
         zIndex: 1000,
