@@ -255,7 +255,7 @@ function SidebarComponent() {
             <MenuItemComponent
                 title="Settings"
                 icon={IconSettings}
-                onClick={() => onItemClicked('/Settings')}
+                onClick={() => onItemClicked('/settings')}
                 active={isSelectedItem({ item: 'Settings' })}
             />
             <MenuItemComponent

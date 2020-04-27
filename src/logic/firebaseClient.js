@@ -51,7 +51,11 @@ const addSheet = async ({ user, name }) => {
     const newUserSheet = {};
     newUserSheet[`users/${user.uid}/sheets/${newSheetId}`] = {
         id: newSheetId,
-        name: name || `sheet_${newSheetId}`
+        name: name || `sheet_${newSheetId}`,
+        metadata: {
+            position: 100,
+            show: true
+        }
     };
     await updateObject({ object: newUserSheet });
 
