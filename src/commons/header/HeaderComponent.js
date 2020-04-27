@@ -3,7 +3,7 @@ import { string } from 'prop-types';
 import { Row } from 'simple-flexbox';
 import { StyleSheet, css } from 'aphrodite';
 import useReactRouter from 'use-react-router';
-import { useExpenses } from '../useExpenses';
+import { useExpenses } from '../../logic/useExpenses';
 import IconSearch from '../../assets/icon-search';
 import IconBellNew from '../../assets/icon-bell-new';
 
@@ -72,27 +72,27 @@ const styles = StyleSheet.create({
 });
 
 function HeaderComponent(props) {
-    const expenses = useExpenses();
+    const { logout, user } = useExpenses();
     const { location } = useReactRouter();
 
     useEffect(() => {
-        if (location.pathname.indexOf('/sheet/') === 0 && expenses.user) {
+        if (location.pathname.indexOf('/sheet/') === 0 && user) {
             const sheetId = location.pathname.split('/')[2];
-            const sheet = expenses.user.sheets[sheetId];
+            const sheet = user.sheets[sheetId];
             if (!sheet) {
-                expenses.logout();
+                logout();
             }
         }
-    }, [location, expenses, expenses.user]);
+    }, [location, logout, user]);
 
-    if (!expenses.user) {
+    if (!user) {
         return <div></div>;
     }
 
     let title = location.pathname.split('/').pop();
     if (location.pathname.indexOf('/sheet/') === 0) {
         const sheetId = location.pathname.split('/')[2];
-        const sheet = expenses.user.sheets[sheetId];
+        const sheet = user.sheets[sheetId];
         if (sheet) {
             title = sheet.name;
         } else {
@@ -118,10 +118,10 @@ function HeaderComponent(props) {
                 <div className={css(styles.separator)}></div>
                 <Row vertical="center">
                     <span className={css(styles.name, styles.cursorPointer)}>
-                        {expenses.user.name}
+                        {user.name}
                     </span>
                     <img
-                        src={expenses.user.photoUrl}
+                        src={user.photoUrl}
                         alt="avatar"
                         className={css(styles.avatar, styles.cursorPointer)}
                     />

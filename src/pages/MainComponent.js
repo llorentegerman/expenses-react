@@ -3,7 +3,7 @@ import { Column, Row } from 'simple-flexbox';
 import { StyleSheet, css } from 'aphrodite';
 import { Route, Switch } from 'react-router-dom';
 import useReactRouter from 'use-react-router';
-import { useExpenses } from '../commons/useExpenses';
+import { useExpenses } from '../logic/useExpenses';
 import SidebarComponent from '../commons/sidebar/SidebarComponent';
 import HeaderComponent from '../commons/header/HeaderComponent';
 import InitializingComponent from '../commons/InitializingComponent';

@@ -1,12 +1,13 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, css } from 'aphrodite';
 import useReactRouter from 'use-react-router';
 import ReactPaginate from 'react-paginate';
 import { Column, Row } from 'simple-flexbox';
 import FlipMove from 'react-flip-move';
-import { useExpenses } from '../../commons/useExpenses';
+import { useExpenses } from '../../logic/useExpenses';
+import { useSheetChangesSubscription } from '../../logic/useSheetChangesSubscription';
 import ExpenseItem from './ExpenseItem';
-import { numberFormat } from '../../commons/utilities';
+import { numberFormat } from '../../logic/utilities';
 import { LoadingComponent } from '../../commons/InitializingComponent';
 import StatisticsWidget from './StatisticsWidget';
 import StatisticsByCategoryWidget from './StatisticsByCategoryWidget';
@@ -56,125 +57,23 @@ const styles = StyleSheet.create({
 
 function ExpensesComponent() {
     const { history, match } = useReactRouter();
-    const {
-        formatData,
-        user,
-        logout,
-        getSheet,
-        getExpensesRef,
-        getMetadataRef,
-        loadings: { loading_getSheet }
-    } = useExpenses();
-    const [expenses, setExpenses] = useState([]);
+    const { user } = useExpenses();
+    const { expenses, loading, statistics, tags } = useSheetChangesSubscription(
+        match.params.sheetId
+    );
     const [expensesFiltered, setExpensesFiltered] = useState([]);
-    const [tags, setTags] = useState([]);
-    const [statistics, setStatistics] = useState({});
+
+    useEffect(() => setExpensesFiltered([...expenses].splice(0, 10)), [
+        expenses
+    ]);
 
     const onAddSheetClick = () =>
         history.push(`/sheet/${match.params.sheetId}/new`);
 
-    const onExpenseClick = useCallback(
-        expenseId =>
-            history.push(`/sheet/${match.params.sheetId}/edit/${expenseId}`),
-        [history, match.params.sheetId]
-    );
+    const onExpenseClick = expenseId =>
+        history.push(`/sheet/${match.params.sheetId}/edit/${expenseId}`);
 
     useEffect(() => window.scrollTo(0, 0), []);
-
-    useEffect(() => {
-        let isInitialFetch = true;
-        let _rawData = [];
-        let _metadata = {};
-
-        const getSheetFetch = async sheetId => {
-            const getSheetResponse = await getSheet(sheetId);
-            setExpenses(getSheetResponse.expenses);
-            setExpensesFiltered([...getSheetResponse.expenses].splice(0, 10));
-            setStatistics(getSheetResponse.metadata.statistics);
-            setTags(getSheetResponse.metadata.tags);
-            _rawData = getSheetResponse.expensesRaw;
-            _metadata = getSheetResponse.metadata;
-            isInitialFetch = false;
-        };
-        if (match.params.sheetId && user) {
-            const sheet = user.sheets[match.params.sheetId];
-            if (!sheet) {
-                logout();
-            } else {
-                const expensesRef = getExpensesRef(match.params.sheetId);
-                const metadataRef = getMetadataRef(match.params.sheetId);
-                expensesRef.on('child_added', childSnapshot => {
-                    if (isInitialFetch) {
-                        return;
-                    }
-                    const array = [..._rawData, childSnapshot.val()];
-                    _rawData = [...array];
-                    const formatted = formatData(array);
-                    setExpenses(formatted);
-                    setExpensesFiltered(formatted.splice(0, 10));
-                });
-
-                expensesRef.on('child_changed', childSnapshot => {
-                    if (isInitialFetch) {
-                        return;
-                    }
-                    const dataIndex = _rawData.findIndex(
-                        d => d.id === childSnapshot.key
-                    );
-                    const newRawData = [..._rawData];
-                    newRawData[dataIndex] = childSnapshot.val();
-                    _rawData = [...newRawData];
-                    const formatted = formatData(newRawData);
-                    setExpenses(formatted);
-                    setExpensesFiltered(formatted.splice(0, 10));
-                });
-
-                expensesRef.on('child_removed', childSnapshot => {
-                    if (isInitialFetch) {
-                        return;
-                    }
-                    const dataIndex = _rawData.findIndex(
-                        d => d.id === childSnapshot.key
-                    );
-                    const newRawData = [..._rawData];
-                    newRawData.splice(dataIndex, 1);
-                    const formatted = formatData(newRawData);
-                    setExpenses(formatted);
-                    setExpensesFiltered(formatted.splice(0, 10));
-                });
-
-                metadataRef.on('child_added', childSnapshot => {
-                    if (isInitialFetch) {
-                        return;
-                    }
-                    _metadata[childSnapshot.key] = childSnapshot.val();
-                    setStatistics(_metadata.statistics);
-                    setTags(_metadata.tags);
-                });
-
-                metadataRef.on('child_changed', childSnapshot => {
-                    if (isInitialFetch) {
-                        return;
-                    }
-                    _metadata[childSnapshot.key] = childSnapshot.val();
-                    setStatistics(_metadata.statistics);
-                    setTags(_metadata.tags);
-                });
-
-                metadataRef.on('child_removed', childSnapshot => {
-                    if (isInitialFetch) {
-                        return;
-                    }
-                    delete _metadata[childSnapshot.key];
-                    setStatistics(_metadata.statistics);
-                    setTags(_metadata.tags);
-                });
-
-                getSheetFetch(match.params.sheetId);
-            }
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [match.params.sheetId]);
 
     if (user && Object.keys(user.sheets).length === 0) {
         return (
@@ -207,10 +106,13 @@ function ExpensesComponent() {
     }
 
     const sheetName =
-        user && user.sheets && user.sheets[match.params.sheetId].name;
+        user &&
+        user.sheets &&
+        user.sheets[match.params.sheetId] &&
+        user.sheets[match.params.sheetId].name;
 
     return (
-        <LoadingComponent loading={loading_getSheet} fullScreen>
+        <LoadingComponent loading={loading} fullScreen>
             <Column horizontal="center">
                 <Row
                     style={{ width: '100%' }}
@@ -265,7 +167,7 @@ function ExpensesComponent() {
                         </Row>
 
                         <FlipMove>
-                            {(expensesFiltered || []).map((e, i) => (
+                            {(expensesFiltered || []).map(e => (
                                 <ExpenseItem
                                     key={e.id}
                                     expense={e}

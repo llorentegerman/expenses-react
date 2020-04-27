@@ -1,3 +1,9 @@
+## Function CORS error
+
+https://github.com/firebase/functions-samples/issues/395#issuecomment-605025572
+
+https://cloud.google.com/functions/docs/securing/managing-access-iam
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts

@@ -1,16 +1,18 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, css } from 'aphrodite';
 import useReactRouter from 'use-react-router';
 import { Column, Row } from 'simple-flexbox';
 import useForm from 'react-hook-form';
-import Autosuggest from 'react-autosuggest';
+import { useAsync } from 'react-async';
 import DatePicker from 'react-datepicker';
 import ReactTags from 'react-tag-autocomplete';
 import 'react-datepicker/dist/react-datepicker.css';
-import { useExpenses } from '../../commons/useExpenses';
+import { useExpenses } from '../../logic/useExpenses';
+import firebaseClient from '../../logic/firebaseClient';
 import { LoadingComponent } from '../../commons/InitializingComponent';
 import ImageUploadComponent from '../../commons/ImageUpload';
-import { isFileAnImage } from '../../commons/utilities';
+import AutosuggestCustom from '../../commons/AutosuggestCustom';
+import { isFileAnImage } from '../../logic/utilities';
 import '../../commons/styles/tags.css';
 
 const styles = StyleSheet.create({
@@ -41,60 +43,8 @@ const styles = StyleSheet.create({
     }
 });
 
-const theme = {
-    container: {
-        position: 'relative'
-    },
-    input: {
-        height: 40,
-        fontSize: 16,
-        marginTop: 4,
-        width: '99%'
-    },
-    inputFocused: {
-        outline: 'none'
-    },
-    inputOpen: {
-        borderBottomLeftRadius: 0,
-        borderBottomRightRadius: 0
-    },
-    suggestionsContainer: {
-        display: 'none'
-    },
-    suggestionsContainerOpen: {
-        display: 'block',
-        position: 'absolute',
-        top: 45,
-        width: 300,
-        border: '1px solid #aaa',
-        backgroundColor: '#fff',
-        borderBottomLeftRadius: 4,
-        borderBottomRightRadius: 4,
-        zIndex: 2
-    },
-    suggestionsList: {
-        margin: 0,
-        padding: 0,
-        listStyleType: 'none'
-    },
-    suggestion: {
-        cursor: 'pointer'
-    },
-    suggestionHighlighted: {
-        backgroundColor: '#ddd'
-    }
-};
-
 function AddExpenseComponent() {
-    const {
-        getFile,
-        getSheet,
-        initializing,
-        loadings: { loading_getSheet, loading_upsertExpense },
-        logout,
-        upsertExpense,
-        user
-    } = useExpenses();
+    const { getFile, initializing } = useExpenses();
     const { history, match } = useReactRouter();
     const editMode = match.path === '/sheet/:sheetId/edit/:expenseId';
 
@@ -104,38 +54,22 @@ function AddExpenseComponent() {
         }
     });
 
-    const [sheet, setSheet] = useState();
-    const [suggestionsCities, setSuggestionsCities] = useState([]);
-    const [suggestionsCategories, setSuggestionsCategories] = useState([]);
-    const [suggestionsCurrencies, setSuggestionsCurrencies] = useState([]);
-    const [suggestionsMethods, setSuggestionsMethods] = useState([]);
+    const { data: expense, isPending: loadingExpense } = useAsync({
+        promiseFn: firebaseClient.getExpenseById,
+        sheetId: match.params.sheetId,
+        expenseId: match.params.expenseId
+    });
+
+    const { data: metadata, isPending: loadingMetadata } = useAsync({
+        promiseFn: firebaseClient.getMetadata,
+        sheetId: match.params.sheetId
+    });
+
     const [defaultExpense, setDefaultExpense] = useState();
-    const [initializingCities, setInitializingCities] = useState(true);
-    const [initializingCategories, setInitializingCategories] = useState(true);
-    const [initializingCurrencies, setInitializingCurrencies] = useState(true);
-    const [initializingMethods, setInitializingMethods] = useState(true);
+    const [loadingUpsert, setLoadingUpsert] = useState(false);
 
     const [files, setFiles] = useState([]);
     const [filesChanged, setFilesChanged] = useState(0);
-
-    useEffect(() => {
-        window.scrollTo(0, 0);
-        const getSheetFetch = async sheetId => {
-            const getSheetResponse = await getSheet(sheetId);
-            setSheet(getSheetResponse);
-        };
-        if (match.params.sheetId && user) {
-            const sheet = user.sheets[match.params.sheetId];
-            if (!sheet) {
-                logout();
-            } else {
-                getSheetFetch(match.params.sheetId);
-            }
-        } else {
-            setSheet();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [match.params.sheetId]);
 
     useEffect(() => {
         const loadFiles = async filteredExpense => {
@@ -145,7 +79,9 @@ function AddExpenseComponent() {
                 let url = expenseFiles[i].url;
                 let publicUrl = url;
                 try {
-                    publicUrl = await getFile(expenseFiles[i].url);
+                    publicUrl = await firebaseClient.getFile(
+                        expenseFiles[i].url
+                    );
                 } catch (e) {}
 
                 if (!isFileAnImage(expenseFiles[i])) {
@@ -167,7 +103,9 @@ function AddExpenseComponent() {
                 )}`;
                 let thumb = `${thumbFolder}${thumbFilename}`;
                 try {
-                    thumb = await getFile(`${thumbFolder}${thumbFilename}`);
+                    thumb = await firebaseClient.getFile(
+                        `${thumbFolder}${thumbFilename}`
+                    );
                 } catch (e) {}
                 newFiles.push({
                     url,
@@ -179,22 +117,22 @@ function AddExpenseComponent() {
             setFiles(newFiles);
         };
 
-        if (!initializing && !loading_getSheet && sheet && !defaultExpense) {
-            const metadata = sheet.metadata;
+        if (!initializing && !loadingExpense && !defaultExpense && metadata) {
             if (editMode) {
-                const filteredExpense = sheet.expenses.find(
-                    e => e.id === match.params.expenseId
-                );
-                if (!filteredExpense) {
-                    setDefaultExpense({ date: new Date() });
+                if (!expense) {
+                    const newDefault = { date: new Date() };
+                    setDefaultExpense(newDefault);
+                    reset(newDefault);
                 } else {
-                    setDefaultExpense({
-                        ...filteredExpense,
-                        date: new Date(+filteredExpense.date)
-                    });
-                    loadFiles(filteredExpense);
+                    const newDefault = {
+                        ...expense,
+                        date: new Date(+expense.date)
+                    };
+                    setDefaultExpense(newDefault);
+                    reset(newDefault);
+                    loadFiles(expense);
                 }
-            } else if (metadata) {
+            } else {
                 const cities = Object.keys(metadata.cities || {});
                 const defaultCity = cities.find(
                     c => metadata.cities[c].default
@@ -235,33 +173,28 @@ function AddExpenseComponent() {
                         metadata.methods[b].position
                 );
 
-                setDefaultExpense({
+                const newDefault = {
                     date: new Date(),
-                    city: defaultCity || '',
-                    category: defaultCategory || '',
-                    currency: defaultCurrency || '',
-                    method: defaultMethod || ''
-                });
+                    city: defaultCity,
+                    category: defaultCategory,
+                    currency: defaultCurrency,
+                    method: defaultMethod
+                };
+                setDefaultExpense(newDefault);
+                reset(newDefault);
             }
         }
     }, [
         editMode,
         match.params.expenseId,
         initializing,
-        loading_getSheet,
-        sheet,
+        loadingExpense,
         getFile,
-        defaultExpense
+        expense,
+        metadata,
+        defaultExpense,
+        reset
     ]);
-
-    useEffect(() => {
-        if (defaultExpense) {
-            reset(defaultExpense);
-        }
-    }, [defaultExpense, reset]);
-
-    const metadata = sheet && sheet.metadata;
-    const expenses = sheet && sheet.expenses;
 
     const cities = useMemo(() => {
         if (metadata && metadata.cities) {
@@ -315,88 +248,15 @@ function AddExpenseComponent() {
         return [];
     }, [metadata]);
 
-    const getSuggestionsCities = useCallback(
-        value => {
-            if (initializingCities) {
-                setInitializingCities(false);
-                return cities;
-            }
-            const inputValue = value.trim().toLowerCase();
-            const inputLength = inputValue.length;
-
-            return inputLength === 0
-                ? cities
-                : cities.filter(
-                      lang =>
-                          lang.toLowerCase().slice(0, inputLength) ===
-                          inputValue
-                  );
-        },
-        [cities, initializingCities]
-    );
-
-    const getSuggestionsCategories = useCallback(
-        value => {
-            if (initializingCategories) {
-                setInitializingCategories(false);
-                return categories;
-            }
-            const inputValue = value.trim().toLowerCase();
-            const inputLength = inputValue.length;
-
-            return inputLength === 0
-                ? categories
-                : categories.filter(
-                      lang =>
-                          lang.toLowerCase().slice(0, inputLength) ===
-                          inputValue
-                  );
-        },
-        [categories, initializingCategories]
-    );
-
-    const getSuggestionsCurrencies = useCallback(
-        value => {
-            if (initializingCurrencies) {
-                setInitializingCurrencies(false);
-                return currencies;
-            }
-            const inputValue = value.trim().toLowerCase();
-            const inputLength = inputValue.length;
-
-            return inputLength === 0
-                ? currencies
-                : currencies.filter(
-                      lang =>
-                          lang.toLowerCase().slice(0, inputLength) ===
-                          inputValue
-                  );
-        },
-        [currencies, initializingCurrencies]
-    );
-
-    const getSuggestionsMethods = useCallback(
-        value => {
-            if (initializingMethods) {
-                setInitializingMethods(false);
-                return methods;
-            }
-            const inputValue = value.trim().toLowerCase();
-            const inputLength = inputValue.length;
-
-            return inputLength === 0
-                ? methods
-                : methods.filter(
-                      lang =>
-                          lang.toLowerCase().slice(0, inputLength) ===
-                          inputValue
-                  );
-        },
-        [initializingMethods, methods]
-    );
-
-    if (!expenses || !metadata) {
-        return <div></div>;
+    if (!metadata) {
+        return (
+            <LoadingComponent
+                loading={loadingExpense || loadingUpsert || loadingMetadata}
+                fullScreen
+            >
+                <div></div>
+            </LoadingComponent>
+        );
     }
 
     const onSave = async ({ date, ...data }) => {
@@ -404,11 +264,17 @@ function AddExpenseComponent() {
             date: new Date(date).getTime(),
             ...data
         };
+        newData.dateNeg = -newData.date;
         if (editMode) {
             newData.id = match.params.expenseId;
         }
         newData.files = files;
-        await upsertExpense(match.params.sheetId, newData, sheet.metadata);
+        setLoadingUpsert(true);
+        await firebaseClient.upsertExpense({
+            sheetId: match.params.sheetId,
+            item: newData,
+            metadata
+        });
         reset();
         history.push(`/sheet/${match.params.sheetId}`);
     };
@@ -429,7 +295,7 @@ function AddExpenseComponent() {
 
     return (
         <LoadingComponent
-            loading={loading_getSheet || loading_upsertExpense}
+            loading={loadingExpense || loadingUpsert || loadingMetadata}
             fullScreen
         >
             <Column style={{ padding: 25, marginTop: 5 }} horizontal="center">
@@ -454,24 +320,13 @@ function AddExpenseComponent() {
                     />
                     {renderError('date')}
 
-                    <Autosuggest
-                        suggestions={suggestionsCities}
-                        onSuggestionsFetchRequested={({ value }) =>
-                            setSuggestionsCities(getSuggestionsCities(value))
+                    <AutosuggestCustom
+                        onChange={(_, { newValue }) =>
+                            setValue('city', newValue)
                         }
-                        onSuggestionsClearRequested={() =>
-                            setSuggestionsCities([])
-                        }
-                        getSuggestionValue={value => value}
-                        renderSuggestion={suggestion => <div>{suggestion}</div>}
-                        shouldRenderSuggestions={() => true}
-                        theme={theme}
-                        inputProps={{
-                            placeholder: 'CIUDAD',
-                            value: watch('city', ''),
-                            onChange: (e, { newValue }) =>
-                                setValue('city', newValue)
-                        }}
+                        placeholder="CIUDAD"
+                        value={watch('city', (defaultExpense || {}).city || '')}
+                        values={cities}
                     />
                     <input
                         name="city"
@@ -480,26 +335,16 @@ function AddExpenseComponent() {
                     />
                     {renderError('city')}
 
-                    <Autosuggest
-                        suggestions={suggestionsCategories}
-                        onSuggestionsFetchRequested={({ value }) =>
-                            setSuggestionsCategories(
-                                getSuggestionsCategories(value)
-                            )
+                    <AutosuggestCustom
+                        onChange={(_, { newValue }) =>
+                            setValue('category', newValue)
                         }
-                        onSuggestionsClearRequested={() =>
-                            setSuggestionsCategories([])
-                        }
-                        getSuggestionValue={value => value}
-                        renderSuggestion={suggestion => <div>{suggestion}</div>}
-                        shouldRenderSuggestions={() => true}
-                        theme={theme}
-                        inputProps={{
-                            placeholder: 'CATEGORIA',
-                            value: watch('category', ''),
-                            onChange: (e, { newValue }) =>
-                                setValue('category', newValue)
-                        }}
+                        placeholder="CATEGORIA"
+                        value={watch(
+                            'category',
+                            (defaultExpense || {}).category || ''
+                        )}
+                        values={categories}
                     />
                     <input
                         name="category"
@@ -566,26 +411,16 @@ function AddExpenseComponent() {
                     />
                     {renderError('amount')}
 
-                    <Autosuggest
-                        suggestions={suggestionsCurrencies}
-                        onSuggestionsFetchRequested={({ value }) =>
-                            setSuggestionsCurrencies(
-                                getSuggestionsCurrencies(value)
-                            )
+                    <AutosuggestCustom
+                        onChange={(_, { newValue }) =>
+                            setValue('currency', newValue)
                         }
-                        onSuggestionsClearRequested={() =>
-                            setSuggestionsCurrencies([])
-                        }
-                        getSuggestionValue={value => value}
-                        renderSuggestion={suggestion => <div>{suggestion}</div>}
-                        shouldRenderSuggestions={() => true}
-                        theme={theme}
-                        inputProps={{
-                            placeholder: 'MONEDA',
-                            value: watch('currency', ''),
-                            onChange: (e, { newValue }) =>
-                                setValue('currency', newValue)
-                        }}
+                        placeholder="MONEDA"
+                        value={watch(
+                            'currency',
+                            (defaultExpense || {}).currency || ''
+                        )}
+                        values={currencies}
                     />
                     <input
                         name="currency"
@@ -594,24 +429,16 @@ function AddExpenseComponent() {
                     />
                     {renderError('currency')}
 
-                    <Autosuggest
-                        suggestions={suggestionsMethods}
-                        onSuggestionsFetchRequested={({ value }) =>
-                            setSuggestionsMethods(getSuggestionsMethods(value))
+                    <AutosuggestCustom
+                        onChange={(_, { newValue }) =>
+                            setValue('method', newValue)
                         }
-                        onSuggestionsClearRequested={() =>
-                            setSuggestionsMethods([])
-                        }
-                        getSuggestionValue={value => value}
-                        renderSuggestion={suggestion => <div>{suggestion}</div>}
-                        shouldRenderSuggestions={() => true}
-                        theme={theme}
-                        inputProps={{
-                            placeholder: 'METODO',
-                            value: watch('method', ''),
-                            onChange: (e, { newValue }) =>
-                                setValue('method', newValue)
-                        }}
+                        placeholder="METODO"
+                        value={watch(
+                            'method',
+                            (defaultExpense || {}).method || ''
+                        )}
+                        values={methods}
                     />
                     <input
                         name="method"
@@ -620,7 +447,7 @@ function AddExpenseComponent() {
                     />
                     {renderError('method')}
 
-                    {(!editMode || (editMode && defaultExpense)) && (
+                    {(!editMode || (editMode && expense)) && (
                         <ImageUploadComponent
                             onChange={newFiles => {
                                 setFilesChanged(filesChanged + 1);
@@ -631,7 +458,7 @@ function AddExpenseComponent() {
                             hasFiles={
                                 !editMode
                                     ? false
-                                    : (defaultExpense.files || []).length > 0
+                                    : (expense.files || []).length > 0
                             }
                         />
                     )}

@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, css } from 'aphrodite';
 import useReactRouter from 'use-react-router';
 import { Column, Row } from 'simple-flexbox';
 import useForm from 'react-hook-form';
 import 'react-datepicker/dist/react-datepicker.css';
-import { useExpenses } from '../../commons/useExpenses';
+import { useExpenses } from '../../logic/useExpenses';
+import firebaseClient from '../../logic/firebaseClient';
+import { LoadingComponent } from '../../commons/InitializingComponent';
 
 const styles = StyleSheet.create({
     button: {
@@ -27,14 +29,18 @@ const styles = StyleSheet.create({
 });
 
 function AddExpenseComponent() {
-    const { addSheet } = useExpenses();
+    const { refreshUser, user } = useExpenses();
     const { history } = useReactRouter();
 
     const { errors, handleSubmit, register, reset, setValue } = useForm();
 
+    const [loading, setLoading] = useState(false);
+
     const onSave = async ({ name }) => {
-        const sheetId = await addSheet(name);
+        setLoading(true);
+        const sheetId = await firebaseClient.addSheet({ name, user });
         reset();
+        await refreshUser();
         history.push(`/sheet/${sheetId}`);
     };
 
@@ -48,37 +54,43 @@ function AddExpenseComponent() {
         );
 
     return (
-        <Column style={{ padding: 25, marginTop: 5 }} horizontal="center">
-            <Column style={{ width: '100%', maxWidth: 500 }}>
-                <input
-                    type="text"
-                    name="name"
-                    placeholder="NOMBRE"
-                    onChange={e => setValue('name', e.target.value)}
-                    ref={register({ required: true })}
-                    className={css(styles.inputField)}
-                />
-                {renderError('name')}
+        <LoadingComponent loading={loading} fullScreen>
+            <Column style={{ padding: 25, marginTop: 5 }} horizontal="center">
+                <Column style={{ width: '100%', maxWidth: 500 }}>
+                    <input
+                        type="text"
+                        name="name"
+                        placeholder="NOMBRE"
+                        onChange={e => setValue('name', e.target.value)}
+                        ref={register({ required: true })}
+                        className={css(styles.inputField)}
+                    />
+                    {renderError('name')}
 
-                <Row flexGrow={1} style={{ marginTop: 20 }} horizontal="spaced">
-                    <span
-                        className={css(styles.button)}
-                        style={{ backgroundColor: 'red' }}
-                        onClick={onClose}
+                    <Row
+                        flexGrow={1}
+                        style={{ marginTop: 20 }}
+                        horizontal="spaced"
                     >
-                        Cancelar
-                    </span>
+                        <span
+                            className={css(styles.button)}
+                            style={{ backgroundColor: 'red' }}
+                            onClick={onClose}
+                        >
+                            Cancelar
+                        </span>
 
-                    <span
-                        className={css(styles.button)}
-                        style={{ backgroundColor: 'green' }}
-                        onClick={handleSubmit(onSave)}
-                    >
-                        Guardar
-                    </span>
-                </Row>
+                        <span
+                            className={css(styles.button)}
+                            style={{ backgroundColor: 'green' }}
+                            onClick={handleSubmit(onSave)}
+                        >
+                            Guardar
+                        </span>
+                    </Row>
+                </Column>
             </Column>
-        </Column>
+        </LoadingComponent>
     );
 }
 

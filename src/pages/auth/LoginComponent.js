@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, css } from 'aphrodite';
 import { Column, Row } from 'simple-flexbox';
-import { useExpenses } from '../../commons/useExpenses';
+import { useExpenses } from '../../logic/useExpenses';
 import { LoadingComponent } from '../../commons/InitializingComponent';
 import GoogleButton from '../../assets/google_button.jpg';
 
@@ -49,13 +49,16 @@ const styles = StyleSheet.create({
 });
 
 function LoginComponent() {
-    const {
-        initializing,
-        login,
-        loadings: { loading_login }
-    } = useExpenses();
+    const [loading, setLoading] = useState(false);
+    const { initializing, login } = useExpenses();
+
+    const doLogin = () => {
+        setLoading(true);
+        login();
+    };
+
     return (
-        <LoadingComponent loading={initializing || loading_login} fullScreen>
+        <LoadingComponent loading={initializing || loading} fullScreen>
             <Column
                 horizontal="center"
                 vertical="center"
@@ -76,7 +79,7 @@ function LoginComponent() {
                         <Row
                             vertical="center"
                             className={css(styles.googleLoginButton)}
-                            onClick={() => login()}
+                            onClick={() => doLogin()}
                         >
                             <img
                                 src={GoogleButton}

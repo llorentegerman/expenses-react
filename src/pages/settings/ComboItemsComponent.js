@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import useReactRouter from 'use-react-router';
 import { StyleSheet, css } from 'aphrodite';
 import { Column } from 'simple-flexbox';
-import { useExpenses } from '../../commons/useExpenses';
+import { useAsync } from 'react-async';
+import firebaseClient from '../../logic/firebaseClient';
 import { LoadingComponent } from '../../commons/InitializingComponent';
 import SortableListComponent from './SortableListComponent';
 
@@ -38,35 +39,17 @@ const styles = StyleSheet.create({
 
 function ComboItemsComponent({ title, type, options = {} }) {
     const { history, match } = useReactRouter();
-    const {
-        getSheet,
-        logout,
-        setMetadata,
-        user,
-        loadings: { loading_getSheet, loading_setSection }
-    } = useExpenses();
 
-    const [metadata, setMetadataLocal] = useState([]);
+    const [loading, setLoading] = useState(false);
     const [items, setItems] = useState([]);
     const [currentType, setCurrentType] = useState([]);
 
-    useEffect(() => window.scrollTo(0, 0), []);
+    const { data: metadata, error, isPending: loadingMetadata } = useAsync({
+        promiseFn: firebaseClient.getMetadata,
+        sheetId: match.params.sheetId
+    });
 
-    useEffect(() => {
-        const getSheetFetch = async sheetId => {
-            const getSheetResponse = await getSheet(sheetId, { page: 0 });
-            setMetadataLocal(getSheetResponse.metadata);
-        };
-        if (match.params.sheetId && user) {
-            const sheet = user.sheets[match.params.sheetId];
-            if (!sheet) {
-                logout();
-            } else {
-                getSheetFetch(match.params.sheetId);
-            }
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [match.params.sheetId]);
+    useEffect(() => window.scrollTo(0, 0), []);
 
     useEffect(() => {
         if (
@@ -92,18 +75,23 @@ function ComboItemsComponent({ title, type, options = {} }) {
                 position: index
             };
         });
-
-        await setMetadata(match.params.sheetId, type, newItems);
+        setLoading(true);
+        await firebaseClient.setMetadata({
+            sheetId: match.params.sheetId,
+            type,
+            items: newItems
+        });
         history.push(`/sheet/${match.params.sheetId}`);
     };
 
     const onClose = () => history.push(`/sheet/${match.params.sheetId}`);
 
+    if (error) {
+        return <span className={css(styles.title)}>Error: {error}</span>;
+    }
+
     return (
-        <LoadingComponent
-            loading={loading_getSheet || loading_setSection}
-            fullScreen
-        >
+        <LoadingComponent loading={loadingMetadata || loading} fullScreen>
             <Column>
                 <span className={css(styles.title)}>{title}</span>
                 <span className={css(styles.subtitle)}>
