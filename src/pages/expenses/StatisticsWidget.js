@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, css } from 'aphrodite';
 import { Column } from 'simple-flexbox';
 import { getDaysInPeriod, numberFormat } from '../../logic/utilities';
+import StatisticsByCategoryWidget from './StatisticsByCategoryWidget';
 
 const styles = StyleSheet.create({
     statistics: {
@@ -40,33 +41,44 @@ const borderColors = [
 ];
 
 function StatisticsWidget({ index, statistics }) {
+    const [expanded, setExpanded] = useState(false);
     return (
-        <Column
-            horizontal="start"
-            key={`statistics-${statistics.periodo}`}
-            className={css(styles.statistics)}
-            style={{
-                borderColor: borderColors[index % borderColors.length]
-            }}
-        >
-            <span style={{ fontWeight: 600 }}>{statistics.periodo}</span>
-            <span>
-                Promedio: $
-                {numberFormat(Math.round(statistics.average || 0), 0)} / día
-            </span>
-            <span>Total: ${numberFormat(statistics.total, 0)}</span>
-            <span>Días: {statistics.days}</span>
-            <span>
-                Proyección: $
-                {numberFormat(
-                    Math.round(
-                        getDaysInPeriod(statistics.periodo) *
-                            (statistics.average || 0)
-                    ),
-                    0
-                )}
-            </span>
-        </Column>
+        <React.Fragment>
+            <Column
+                horizontal="start"
+                key={`statistics-${statistics.periodo}`}
+                className={css(styles.statistics)}
+                style={{
+                    borderColor: borderColors[index % borderColors.length]
+                }}
+                onClick={() => setExpanded(!expanded)}
+            >
+                <span style={{ fontWeight: 600 }}>{statistics.periodo}</span>
+                <span>
+                    Promedio: $
+                    {numberFormat(Math.round(statistics.average || 0), 0)} / día
+                </span>
+                <span>Total: ${numberFormat(statistics.total, 0)}</span>
+                <span>Días: {statistics.days}</span>
+                <span>
+                    Proyección: $
+                    {numberFormat(
+                        Math.round(
+                            getDaysInPeriod(statistics.periodo) *
+                                (statistics.average || 0)
+                        ),
+                        0
+                    )}
+                </span>
+            </Column>
+            {expanded && statistics.categories && (
+                <StatisticsByCategoryWidget
+                    categories={statistics.categories}
+                    onClick={() => setExpanded(false)}
+                    title={statistics.periodo}
+                />
+            )}
+        </React.Fragment>
     );
 }
 

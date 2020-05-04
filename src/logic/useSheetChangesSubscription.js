@@ -1,15 +1,13 @@
 import { useState, useEffect } from 'react';
 import firebaseClient from './firebaseClient';
-import { useExpenses } from './useExpenses';
 import { sortExpensesByDate } from './utilities';
 
 export function useSheetChangesSubscription(sheetId) {
-    const { user, logout } = useExpenses();
-
     const [expenses, setExpenses] = useState([]);
     const [statistics, setStatistics] = useState({});
     const [tags, setTags] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [sheetName, setSheetName] = useState('');
 
     useEffect(() => {
         let expensesRef;
@@ -22,6 +20,7 @@ export function useSheetChangesSubscription(sheetId) {
         const getSheetFetch = async sheetId => {
             const getSheetResponse = await firebaseClient.getSheet({ sheetId });
             setExpenses(getSheetResponse.expenses);
+            setSheetName(getSheetResponse.sheetName);
             setStatistics(getSheetResponse.metadata.statistics);
             setTags(getSheetResponse.metadata.tags);
             _rawData = getSheetResponse.expenses;
@@ -29,80 +28,75 @@ export function useSheetChangesSubscription(sheetId) {
             isInitialFetch = false;
             setLoading(false);
         };
-        if (sheetId && user) {
-            const sheet = user.sheets[sheetId];
-            if (!sheet) {
-                logout();
-            } else {
-                expensesRef = firebaseClient.getExpensesRef({ sheetId });
-                metadataRef = firebaseClient.getMetadataRef({ sheetId });
-                expensesRef.on('child_added', childSnapshot => {
-                    if (isInitialFetch) {
-                        return;
-                    }
-                    const array = [..._rawData, childSnapshot.val()];
-                    _rawData = [...array];
-                    const formatted = sortExpensesByDate(array);
-                    setExpenses(formatted);
-                });
+        if (sheetId) {
+            expensesRef = firebaseClient.getExpensesRef({ sheetId });
+            metadataRef = firebaseClient.getMetadataRef({ sheetId });
+            expensesRef.on('child_added', childSnapshot => {
+                if (isInitialFetch) {
+                    return;
+                }
+                const array = [..._rawData, childSnapshot.val()];
+                _rawData = [...array];
+                const formatted = sortExpensesByDate(array);
+                setExpenses(formatted);
+            });
 
-                expensesRef.on('child_changed', childSnapshot => {
-                    if (isInitialFetch) {
-                        return;
-                    }
+            expensesRef.on('child_changed', childSnapshot => {
+                if (isInitialFetch) {
+                    return;
+                }
 
-                    const dataIndex = _rawData.findIndex(
-                        d => d.id === childSnapshot.key
-                    );
-                    const newRawData = [..._rawData];
-                    newRawData[dataIndex] = childSnapshot.val();
-                    _rawData = [...newRawData];
-                    const formatted = sortExpensesByDate(newRawData);
-                    setExpenses(formatted);
-                });
+                const dataIndex = _rawData.findIndex(
+                    d => d.id === childSnapshot.key
+                );
+                const newRawData = [..._rawData];
+                newRawData[dataIndex] = childSnapshot.val();
+                _rawData = [...newRawData];
+                const formatted = sortExpensesByDate(newRawData);
+                setExpenses(formatted);
+            });
 
-                expensesRef.on('child_removed', childSnapshot => {
-                    if (isInitialFetch) {
-                        return;
-                    }
-                    const dataIndex = _rawData.findIndex(
-                        d => d.id === childSnapshot.key
-                    );
-                    const newRawData = [..._rawData];
-                    newRawData.splice(dataIndex, 1);
-                    const formatted = sortExpensesByDate(newRawData);
-                    setExpenses(formatted);
-                });
+            expensesRef.on('child_removed', childSnapshot => {
+                if (isInitialFetch) {
+                    return;
+                }
+                const dataIndex = _rawData.findIndex(
+                    d => d.id === childSnapshot.key
+                );
+                const newRawData = [..._rawData];
+                newRawData.splice(dataIndex, 1);
+                const formatted = sortExpensesByDate(newRawData);
+                setExpenses(formatted);
+            });
 
-                metadataRef.on('child_added', childSnapshot => {
-                    if (isInitialFetch) {
-                        return;
-                    }
-                    _metadata[childSnapshot.key] = childSnapshot.val();
-                    setStatistics(_metadata.statistics);
-                    setTags(_metadata.tags);
-                });
+            metadataRef.on('child_added', childSnapshot => {
+                if (isInitialFetch) {
+                    return;
+                }
+                _metadata[childSnapshot.key] = childSnapshot.val();
+                setStatistics(_metadata.statistics);
+                setTags(_metadata.tags);
+            });
 
-                metadataRef.on('child_changed', childSnapshot => {
-                    if (isInitialFetch) {
-                        return;
-                    }
-                    _metadata[childSnapshot.key] = childSnapshot.val();
-                    setStatistics(_metadata.statistics);
-                    setTags(_metadata.tags);
-                });
+            metadataRef.on('child_changed', childSnapshot => {
+                if (isInitialFetch) {
+                    return;
+                }
+                _metadata[childSnapshot.key] = childSnapshot.val();
+                setStatistics(_metadata.statistics);
+                setTags(_metadata.tags);
+            });
 
-                metadataRef.on('child_removed', childSnapshot => {
-                    if (isInitialFetch) {
-                        return;
-                    }
-                    delete _metadata[childSnapshot.key];
-                    setStatistics(_metadata.statistics);
-                    setTags(_metadata.tags);
-                });
+            metadataRef.on('child_removed', childSnapshot => {
+                if (isInitialFetch) {
+                    return;
+                }
+                delete _metadata[childSnapshot.key];
+                setStatistics(_metadata.statistics);
+                setTags(_metadata.tags);
+            });
 
-                getSheetFetch(sheetId);
-            }
+            getSheetFetch(sheetId);
         }
 
         return () => {
@@ -119,6 +113,7 @@ export function useSheetChangesSubscription(sheetId) {
     return {
         expenses,
         loading,
+        sheetName,
         statistics,
         tags
     };

@@ -49,9 +49,7 @@ function AddExpenseComponent() {
     const editMode = match.path === '/sheet/:sheetId/edit/:expenseId';
 
     const { errors, handleSubmit, register, reset, setValue, watch } = useForm({
-        defaultValues: {
-            date: new Date()
-        }
+        defaultValues: {}
     });
 
     const { data: expense, isPending: loadingExpense } = useAsync({
@@ -302,7 +300,13 @@ function AddExpenseComponent() {
                 <Column style={{ width: '100%', maxWidth: 500 }}>
                     <DatePicker
                         name="date"
-                        selected={new Date(watch('date'))}
+                        selected={
+                            watch('date')
+                                ? new Date(watch('date'))
+                                : (defaultExpense || {}).date
+                                ? new Date((defaultExpense || {}).date)
+                                : new Date()
+                        }
                         onChange={date => setValue('date', date)}
                         dateFormat="dd/MM/yyyy"
                         customInput={

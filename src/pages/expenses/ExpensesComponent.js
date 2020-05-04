@@ -4,7 +4,6 @@ import useReactRouter from 'use-react-router';
 import ReactPaginate from 'react-paginate';
 import { Column, Row } from 'simple-flexbox';
 import FlipMove from 'react-flip-move';
-import { useExpenses } from '../../logic/useExpenses';
 import { useSheetChangesSubscription } from '../../logic/useSheetChangesSubscription';
 import ExpenseItem from './ExpenseItem';
 import { numberFormat } from '../../logic/utilities';
@@ -50,17 +49,21 @@ const styles = StyleSheet.create({
     sheetName: {
         display: 'none',
         '@media (max-width: 1080px)': {
-            display: 'block'
+            display: 'block',
+            marginTop: 10
         }
     }
 });
 
 function ExpensesComponent() {
     const { history, match } = useReactRouter();
-    const { user } = useExpenses();
-    const { expenses, loading, statistics, tags } = useSheetChangesSubscription(
-        match.params.sheetId
-    );
+    const {
+        expenses,
+        loading,
+        sheetName,
+        statistics,
+        tags
+    } = useSheetChangesSubscription(match.params.sheetId);
     const [expensesFiltered, setExpensesFiltered] = useState([]);
 
     useEffect(() => setExpensesFiltered([...expenses].splice(0, 10)), [
@@ -74,14 +77,6 @@ function ExpensesComponent() {
         history.push(`/sheet/${match.params.sheetId}/edit/${expenseId}`);
 
     useEffect(() => window.scrollTo(0, 0), []);
-
-    if (user && Object.keys(user.sheets).length === 0) {
-        return (
-            <Column vertical="center">
-                <span onClick={onAddSheetClick}>CREAR SHEET</span>
-            </Column>
-        );
-    }
 
     const handlePageClick = ({ selected }) => {
         setExpensesFiltered([...expenses].splice(selected * 10, 10));
@@ -104,12 +99,6 @@ function ExpensesComponent() {
         var diffTime = Math.abs(statistics.lastUpdate - statistics.minDate);
         totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
     }
-
-    const sheetName =
-        user &&
-        user.sheets &&
-        user.sheets[match.params.sheetId] &&
-        user.sheets[match.params.sheetId].name;
 
     return (
         <LoadingComponent loading={loading} fullScreen>

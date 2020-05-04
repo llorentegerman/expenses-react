@@ -42,37 +42,45 @@ const styles = StyleSheet.create({
     }
 });
 
-function StatisticsByCategoryWidget({ categories }) {
+function StatisticsByCategoryWidget({ categories, onClick, title }) {
     return (
-        <Row
-            horizontal="spaced"
+        <Column
             className={css(styles.statistics)}
+            onClick={onClick}
             style={{
                 borderColor: '#17183B'
             }}
-            wrap
         >
-            {Object.keys(categories).map(category => {
-                const statistics = categories[category];
-                return (
-                    <Column
-                        key={`statistics-category-${category}`}
-                        className={css(styles.categoryStatistics)}
-                    >
-                        <span style={{ fontWeight: 600 }}>{category}</span>
-                        <span>
-                            Promedio: $
-                            {numberFormat(
-                                Math.round(statistics.average || 0),
-                                0
-                            )}{' '}
-                            / día
-                        </span>
-                        <span>Total: ${numberFormat(statistics.total, 0)}</span>
-                    </Column>
-                );
-            })}
-        </Row>
+            {title && (
+                <span style={{ fontWeight: 600, marginBottom: 4 }}>
+                    {title}
+                </span>
+            )}
+            <Row horizontal="spaced" wrap>
+                {Object.keys(categories).map(category => {
+                    const statistics = categories[category];
+                    return (
+                        <Column
+                            key={`statistics-category-${category}`}
+                            className={css(styles.categoryStatistics)}
+                        >
+                            <span style={{ fontWeight: 600 }}>{category}</span>
+                            <span>
+                                Promedio: $
+                                {numberFormat(
+                                    Math.round(statistics.average || 0),
+                                    0
+                                )}{' '}
+                                / día
+                            </span>
+                            <span>
+                                Total: ${numberFormat(statistics.total, 0)}
+                            </span>
+                        </Column>
+                    );
+                })}
+            </Row>
+        </Column>
     );
 }
 
