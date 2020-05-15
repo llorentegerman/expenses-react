@@ -1,69 +1,71 @@
 {
-  "name": "expenses-react",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@welldone-software/why-did-you-render": "^3.3.5",
-    "aphrodite": "^2.4.0",
-    "array-move": "^2.1.0",
-    "firebase": "^7.13.2",
-    "moment": "^2.24.0",
-    "rc-notification": "^3.3.1",
-    "react": "^16.9.0",
-    "react-async": "^10.0.1",
-    "react-autosuggest": "^10.0.0",
-    "react-burger-menu": "^2.6.13",
-    "react-color": "^2.17.3",
-    "react-datepicker": "^2.9.6",
-    "react-dom": "^16.9.0",
-    "react-dropzone": "^10.2.1",
-    "react-flip-move": "^3.0.3",
-    "react-hook-form": "^3.23.10",
-    "react-images": "^1.0.0",
-    "react-loading-overlay": "^1.0.1",
-    "react-paginate": "^6.3.0",
-    "react-photo-gallery": "^8.0.0",
-    "react-router-dom": "^5.0.1",
-    "react-scripts": "3.1.1",
-    "react-sortable-hoc": "^1.10.1",
-    "react-super-responsive-table": "^5.0.4",
-    "react-switch": "^5.0.1",
-    "react-tag-autocomplete": "^6.0.0-beta.1",
-    "simple-flexbox": "^2.3.0",
-    "use-react-router": "^1.0.7"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "functions:delete": "firebase functions:delete updateStatics updateSheetName removeOldFiles resizeImage rotateImage --force",
-    "functions:deploy": "firebase deploy --only functions",
-    "functions:redeploy": "yarn functions:delete && yarn functions:deploy",
-    "deploy": "yarn build && firebase deploy --only hosting"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "devDependencies": {
-    "eslint-config-prettier": "^6.4.0",
-    "eslint-plugin-prettier": "^3.1.1",
-    "minimist": "^1.2.5",
-    "prettier": "^1.18.2"
-  },
-  "resolutions": {
-    "minimist": "^1.2.5"
-  }
+    "name": "expenses-react",
+    "version": "0.1.0",
+    "private": true,
+    "homepage": "https://llorentegerman.github.io/expenses-react",
+    "dependencies": {
+        "@welldone-software/why-did-you-render": "^3.3.5",
+        "aphrodite": "^2.4.0",
+        "array-move": "^2.1.0",
+        "firebase": "^7.13.2",
+        "moment": "^2.24.0",
+        "rc-notification": "^3.3.1",
+        "react": "^16.9.0",
+        "react-async": "^10.0.1",
+        "react-autosuggest": "^10.0.0",
+        "react-burger-menu": "^2.6.13",
+        "react-color": "^2.17.3",
+        "react-datepicker": "^2.9.6",
+        "react-dom": "^16.9.0",
+        "react-dropzone": "^10.2.1",
+        "react-flip-move": "^3.0.3",
+        "react-hook-form": "^3.23.10",
+        "react-images": "^1.0.0",
+        "react-paginate": "^6.3.0",
+        "react-photo-gallery": "^8.0.0",
+        "react-router-dom": "^5.0.1",
+        "react-scripts": "3.1.1",
+        "react-sortable-hoc": "^1.10.1",
+        "react-switch": "^5.0.1",
+        "react-tag-autocomplete": "^6.0.0-beta.1",
+        "simple-flexbox": "^2.3.0",
+        "use-react-router": "^1.0.7"
+    },
+    "scripts": {
+        "start": "react-scripts start",
+        "build": "react-scripts build",
+        "test": "react-scripts test",
+        "eject": "react-scripts eject",
+        "functions:delete": "firebase functions:delete updateStatics updateSheetName removeOldFiles resizeImage rotateImage --force",
+        "functions:deploy": "firebase deploy --only functions",
+        "functions:redeploy": "yarn functions:delete && yarn functions:deploy",
+        "deploy": "yarn build && firebase deploy --only hosting",
+        "predeploy": "npm run build",
+        "deploy:gh": "gh-pages -d build"
+    },
+    "eslintConfig": {
+        "extends": "react-app"
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    },
+    "devDependencies": {
+        "eslint-config-prettier": "^6.4.0",
+        "eslint-plugin-prettier": "^3.1.1",
+        "gh-pages": "^2.2.0",
+        "minimist": "^1.2.5",
+        "prettier": "^1.18.2"
+    },
+    "resolutions": {
+        "minimist": "^1.2.5"
+    }
 }
