@@ -12,15 +12,17 @@ function CollapsibleComponent({
     const maxHeight = useRef('100vh');
 
     useEffect(() => {
+        let mounted = true;
         if (maxHeight.current !== '100vh' && contentContainerRef.current) {
             setTimeout(
                 () => {
                     maxHeight.current =
-                        contentContainerRef.current.scrollHeight;
+                        mounted && contentContainerRef.current.scrollHeight;
                 },
                 0 // because scrollHeight could change after first render
             );
         }
+        return () => { mounted = false; }; // prettier-ignore
     }, [children]);
 
     useEffect(() => {

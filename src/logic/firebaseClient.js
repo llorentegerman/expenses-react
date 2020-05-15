@@ -3,6 +3,7 @@ import 'firebase/auth';
 import 'firebase/storage';
 import 'firebase/database';
 import 'firebase/functions';
+import fakeClient from './fakeClient';
 
 const _fetchData = async path => {
     const reference = getRef(path);
@@ -23,7 +24,8 @@ const _config = {
     projectId: process.env.REACT_APP_projectId,
     storageBucket: process.env.REACT_APP_storageBucket,
     messagingSenderId: process.env.REACT_APP_messagingSenderId,
-    appId: process.env.REACT_APP_appId
+    appId: process.env.REACT_APP_appId,
+    fakeClient: process.env.REACT_APP_fakeClient === 'true'
 };
 
 const addSheet = async ({ user, name }) => {
@@ -64,6 +66,9 @@ const addSheet = async ({ user, name }) => {
     await updateObject({ object: newUserSheet });
 
     const userUpdate = { ...user };
+    if (!userUpdate.sheets) {
+        userUpdate.sheets = {};
+    }
     userUpdate.sheets[newSheetId] = {
         id: newSheetId,
         name: name || `sheet_${newSheetId}`
@@ -316,29 +321,31 @@ const upsertExpense = async ({
         .update(updates);
 };
 
-export default {
-    addSheet,
-    getExpenses,
-    getExpenseById,
-    getExpensesRef,
-    getFile,
-    getMetadata,
-    getMetadataRef,
-    getNewExpenseId,
-    getNewSheetId,
-    getRef,
-    getSheet,
-    getSheetName,
-    init,
-    login,
-    logout,
-    onAuthStateChanged,
-    refreshUser,
-    removeExpense,
-    removeSheet,
-    setMetadata,
-    setSheetName,
-    setUserSheets,
-    updateObject,
-    upsertExpense
-};
+export default _config.fakeClient
+    ? fakeClient
+    : {
+          addSheet,
+          getExpenses,
+          getExpenseById,
+          getExpensesRef,
+          getFile,
+          getMetadata,
+          getMetadataRef,
+          getNewExpenseId,
+          getNewSheetId,
+          getRef,
+          getSheet,
+          getSheetName,
+          init,
+          login,
+          logout,
+          onAuthStateChanged,
+          refreshUser,
+          removeExpense,
+          removeSheet,
+          setMetadata,
+          setSheetName,
+          setUserSheets,
+          updateObject,
+          upsertExpense
+      };

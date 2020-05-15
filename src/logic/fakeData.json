@@ -1,0 +1,381 @@
+{
+    "sheets": {
+        "ABC": {
+            "id": "ABC",
+            "name": "Australia",
+            "expenses": {
+                "1": {
+                    "id": 1,
+                    "amount": 272.7,
+                    "category": "Accommodation",
+                    "city": "Melbourne",
+                    "currency": "AUS",
+                    "date": 1587509273000,
+                    "description": "Bread - Triangle White",
+                    "method": "Transfer",
+                    "dateNeg": -1587509273000,
+                    "tags": "tag1"
+                },
+                "2": {
+                    "id": 2,
+                    "amount": 114.03,
+                    "category": "Other",
+                    "city": "Brisbane",
+                    "currency": "AUS",
+                    "date": 1588401907000,
+                    "description": "Black Currants",
+                    "method": "Transfer",
+                    "dateNeg": -1588401907000,
+                    "tags": ""
+                },
+                "3": {
+                    "id": 3,
+                    "amount": 189.49,
+                    "category": "Accommodation",
+                    "city": "Sydney",
+                    "currency": "AUS",
+                    "date": 1588431423000,
+                    "description": "Artichoke - Bottom, Canned",
+                    "method": "Credit_Card",
+                    "dateNeg": -1588431423000,
+                    "tags": "tag2,tag3"
+                },
+                "4": {
+                    "id": 4,
+                    "amount": 233.36,
+                    "category": "Other",
+                    "city": "Brisbane",
+                    "currency": "AUS",
+                    "date": 1586943134000,
+                    "description": "Clams - Canned",
+                    "method": "Cash",
+                    "dateNeg": -1586943134000,
+                    "tags": ""
+                },
+                "5": {
+                    "id": 5,
+                    "amount": 83.53,
+                    "category": "Other",
+                    "city": "Sydney",
+                    "currency": "AUS",
+                    "date": 1585802058000,
+                    "description": "Rabbit - Saddles",
+                    "method": "Credit_Card",
+                    "dateNeg": -1585802058000,
+                    "tags": "tag2"
+                },
+                "6": {
+                    "id": 6,
+                    "amount": 190.88,
+                    "category": "Other",
+                    "city": "Sydney",
+                    "currency": "AUS",
+                    "date": 1587477260000,
+                    "description": "Wine - Shiraz South Eastern",
+                    "method": "Credit_Card",
+                    "dateNeg": -1587477260000,
+                    "tags": ""
+                },
+                "7": {
+                    "id": 7,
+                    "amount": 219.59,
+                    "category": "Other",
+                    "city": "Sydney",
+                    "currency": "AUS",
+                    "date": 1585881570000,
+                    "description": "Rum - Mount Gay Eclipes",
+                    "method": "Credit_Card",
+                    "dateNeg": -1585881570000,
+                    "tags": "tag3"
+                },
+                "8": {
+                    "id": 8,
+                    "amount": 167.65,
+                    "category": "Accommodation",
+                    "city": "Melbourne",
+                    "currency": "AUS",
+                    "date": 1586883418000,
+                    "description": "Wine - Magnotta, White",
+                    "method": "Cash",
+                    "dateNeg": -1586883418000,
+                    "tags": ""
+                },
+                "9": {
+                    "id": 9,
+                    "amount": 213.37,
+                    "category": "Accommodation",
+                    "city": "Sydney",
+                    "currency": "AUS",
+                    "date": 1587310163000,
+                    "description": "Chicken - Wieners",
+                    "method": "Cash",
+                    "dateNeg": -1587310163000,
+                    "tags": "tag3"
+                },
+                "10": {
+                    "id": 10,
+                    "amount": 286.93,
+                    "category": "Accommodation",
+                    "city": "Sydney",
+                    "currency": "AUS",
+                    "date": 1586389118000,
+                    "description": "Ham - Proscuitto",
+                    "method": "Credit_Card",
+                    "dateNeg": -1586389118000,
+                    "tags": ""
+                },
+                "11": {
+                    "id": 11,
+                    "amount": 258.72,
+                    "category": "Other",
+                    "city": "Brisbane",
+                    "currency": "AUS",
+                    "date": 1587756201000,
+                    "description": "Towels - Paper / Kraft",
+                    "method": "Transfer",
+                    "dateNeg": -1587756201000,
+                    "tags": ""
+                },
+                "12": {
+                    "id": 12,
+                    "amount": 111.25,
+                    "category": "Food",
+                    "city": "Melbourne",
+                    "currency": "AUS",
+                    "date": 1586530348000,
+                    "description": "Energy Drink - Franks Original",
+                    "method": "Credit_Card",
+                    "dateNeg": -1586530348000,
+                    "tags": "tag1"
+                },
+                "13": {
+                    "id": 13,
+                    "amount": 247.09,
+                    "category": "Accommodation",
+                    "city": "Melbourne",
+                    "currency": "AUS",
+                    "date": 1586382651000,
+                    "description": "Pork - Shoulder",
+                    "method": "Transfer",
+                    "dateNeg": -1586382651000,
+                    "tags": ""
+                },
+                "14": {
+                    "id": 14,
+                    "amount": 20.81,
+                    "category": "Food",
+                    "city": "Sydney",
+                    "currency": "AUS",
+                    "date": 1586315477000,
+                    "description": "Lamb - Leg, Boneless",
+                    "method": "Cash",
+                    "dateNeg": -1586315477000,
+                    "tags": ""
+                },
+                "15": {
+                    "id": 15,
+                    "amount": 126.41,
+                    "category": "Accommodation",
+                    "city": "Melbourne",
+                    "currency": "AUS",
+                    "date": 1588820715000,
+                    "description": "Wine - Lamancha Do Crianza",
+                    "method": "Cash",
+                    "dateNeg": -1588820715000,
+                    "tags": "tag2"
+                },
+                "16": {
+                    "id": 16,
+                    "amount": 235.77,
+                    "category": "Accommodation",
+                    "city": "Brisbane",
+                    "currency": "AUS",
+                    "date": 1586549877000,
+                    "description": "Mousse - Banana Chocolate",
+                    "method": "Transfer",
+                    "dateNeg": -1586549877000,
+                    "tags": ""
+                },
+                "17": {
+                    "id": 17,
+                    "amount": 257.29,
+                    "category": "Food",
+                    "city": "Brisbane",
+                    "currency": "AUS",
+                    "date": 1588694792000,
+                    "description": "Ham - Smoked, Bone - In",
+                    "method": "Credit_Card",
+                    "dateNeg": -1588694792000,
+                    "tags": ""
+                },
+                "18": {
+                    "id": 18,
+                    "amount": 90,
+                    "category": "Other",
+                    "city": "Brisbane",
+                    "currency": "AUS",
+                    "date": 1587438117000,
+                    "description": "Bacon Strip Precooked",
+                    "method": "Transfer",
+                    "dateNeg": -1587438117000,
+                    "tags": ""
+                },
+                "19": {
+                    "id": 19,
+                    "amount": 223.3,
+                    "category": "Other",
+                    "city": "Sydney",
+                    "currency": "AUS",
+                    "date": 1587721106000,
+                    "description": "Chocolate Eclairs",
+                    "method": "Transfer",
+                    "dateNeg": -1587721106000,
+                    "tags": ""
+                },
+                "20": {
+                    "id": 20,
+                    "amount": 267.99,
+                    "category": "Transport",
+                    "city": "Brisbane",
+                    "currency": "AUS",
+                    "date": 1588855775000,
+                    "description": "Orange - Blood",
+                    "method": "Credit_Card",
+                    "dateNeg": -1588855775000,
+                    "tags": ""
+                }
+            },
+            "metadata": {
+                "categories": {
+                    "Food": {
+                        "default": true,
+                        "position": 0
+                    },
+                    "Accommodation": {
+                        "position": 1
+                    },
+                    "Transport": {
+                        "position": 2
+                    },
+                    "Other": {
+                        "position": 3
+                    }
+                },
+                "cities": {
+                    "Sydney": {
+                        "default": true,
+                        "position": 0
+                    },
+                    "Melbourne": {
+                        "position": 1
+                    },
+                    "Brisbane": {
+                        "position": 2
+                    }
+                },
+                "currencies": {
+                    "AUS": {
+                        "default": true,
+                        "position": 0
+                    }
+                },
+                "methods": {
+                    "Cash": {
+                        "position": 100
+                    },
+                    "Credit_Card": {
+                        "position": 100
+                    },
+                    "Transfer": {
+                        "position": 100
+                    }
+                },
+                "name": "Australia",
+                "statistics": {
+                    "categories": {
+                        "Accommodation": {
+                            "total": 1739.41,
+                            "average": 39.532045454545454
+                        },
+                        "Other": {
+                            "total": 1413.41,
+                            "average": 32.12295454545455
+                        },
+                        "Food": {
+                            "total": 389.35,
+                            "average": 8.848863636363637
+                        },
+                        "Transport": {
+                            "total": 267.99,
+                            "average": 6.090681818181818
+                        }
+                    },
+                    "minDate": 1585802058000,
+                    "total": 3810.16,
+                    "average": 86.59454545454545,
+                    "lastUpdate": 1589516348483,
+                    "createdAt": 1589516348483,
+                    "2020-04": {
+                        "total": 2854.9500000000003,
+                        "average": 101.9625,
+                        "categories": {
+                            "Accommodation": {
+                                "total": 1423.51,
+                                "average": 50.839642857142856
+                            },
+                            "Other": {
+                                "total": 1299.3799999999999,
+                                "average": 46.40642857142857
+                            },
+                            "Food": {
+                                "total": 132.06,
+                                "average": 4.716428571428572
+                            }
+                        },
+                        "days": 28,
+                        "lastUpdate": 1589516348482
+                    },
+                    "2020-05": {
+                        "total": 955.21,
+                        "average": 63.68066666666667,
+                        "categories": {
+                            "Other": {
+                                "total": 114.03,
+                                "average": 7.602
+                            },
+                            "Accommodation": {
+                                "total": 315.9,
+                                "average": 21.06
+                            },
+                            "Food": {
+                                "total": 257.29,
+                                "average": 17.15266666666667
+                            },
+                            "Transport": {
+                                "total": 267.99,
+                                "average": 17.866
+                            }
+                        },
+                        "days": 15,
+                        "lastUpdate": 1589516348483
+                    }
+                },
+                "tags": {
+                    "tag1": {
+                        "position": 1,
+                        "backgroundColor": "#ff9b00",
+                        "color": "#ffffff"
+                    },
+                    "tag2": {
+                        "position": 2,
+                        "backgroundColor": "#477998",
+                        "color": "#FFFFFF"
+                    },
+                    "tag3": {
+                        "position": 3
+                    }
+                }
+            }
+        }
+    }
+}

@@ -52,9 +52,13 @@ function LoginComponent() {
     const [loading, setLoading] = useState(false);
     const { initializing, login } = useExpenses();
 
-    const doLogin = () => {
+    const doLogin = async () => {
         setLoading(true);
-        login();
+        try {
+            await login();
+        } catch (e) {
+            setLoading(false);
+        }
     };
 
     return (

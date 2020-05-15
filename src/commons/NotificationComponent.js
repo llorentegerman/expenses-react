@@ -16,9 +16,9 @@ Notification.newInstance(
 );
 
 export default {
-    show: () =>
+    show: ({ key, message, style }) =>
         notification.notice({
-            content: <span>You are offline</span>,
+            content: <span>{message}</span>,
             style: {
                 right: 0,
                 margin: 0,
@@ -27,10 +27,11 @@ export default {
                 backgroundColor: 'red',
                 color: '#FFFFFF',
                 borderRadius: 0,
-                textAlign: 'center'
+                textAlign: 'center',
+                ...style
             },
             duration: null,
-            key: 'offline'
+            key
         }),
-    hide: () => notification.removeNotice('offline')
+    hide: key => notification.removeNotice(key)
 };

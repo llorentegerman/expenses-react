@@ -7,7 +7,7 @@ import { useExpenses } from '../logic/useExpenses';
 import SidebarComponent from '../commons/sidebar/SidebarComponent';
 import HeaderComponent from '../commons/header/HeaderComponent';
 import InitializingComponent from '../commons/InitializingComponent';
-import OfflineNotification from '../commons/OfflineNotification';
+import NotificationComponent from '../commons/NotificationComponent';
 import LoginComponent from './auth/LoginComponent';
 import Routes from './routes';
 
@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
     }
 });
 
-function MainComponent(props) {
+function MainComponent() {
     return (
         <Row className={css(styles.container)}>
             <SidebarComponent />
@@ -62,12 +62,48 @@ function RenterRoutes() {
     useEffect(() => {
         if (!initializing) {
             if (!isOnline) {
-                OfflineNotification.show();
+                NotificationComponent.show({
+                    key: 'offline',
+                    message: 'You are offline',
+                    style: {
+                        backgroundColor: 'red',
+                        color: '#FFFFFF'
+                    }
+                });
             } else {
-                OfflineNotification.hide();
+                NotificationComponent.hide('offline');
             }
         }
     }, [initializing, isOnline]);
+
+    useEffect(() => {
+        if (!initializing) {
+            if (process.env.REACT_APP_fakeClient === 'true') {
+                NotificationComponent.show({
+                    key: 'fake',
+                    message: (
+                        <span>
+                            <b>Fake data</b>
+                            <span
+                                style={{ cursor: 'pointer', marginLeft: 16 }}
+                                onClick={() =>
+                                    NotificationComponent.hide('fake')
+                                }
+                            >
+                                &#10005;
+                            </span>
+                        </span>
+                    ),
+                    style: {
+                        backgroundColor: 'rgb(44, 104, 156)',
+                        color: 'rgb(164, 166, 179)'
+                    }
+                });
+            } else {
+                NotificationComponent.hide('fake');
+            }
+        }
+    }, [initializing]);
 
     if (initializing) {
         return <InitializingComponent />;
