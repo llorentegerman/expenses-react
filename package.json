@@ -39,9 +39,9 @@
         "functions:delete": "firebase functions:delete updateStatics updateSheetName removeOldFiles resizeImage rotateImage --force",
         "functions:deploy": "firebase deploy --only functions",
         "functions:redeploy": "yarn functions:delete && yarn functions:deploy",
-        "deploy": "yarn build && firebase deploy --only hosting",
+        "deploy:firebase": "yarn build && firebase deploy --only hosting",
         "predeploy": "npm run build",
-        "deploy:gh": "gh-pages -d build"
+        "deploy": "gh-pages -d build"
     },
     "eslintConfig": {
         "extends": "react-app"

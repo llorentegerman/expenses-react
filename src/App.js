@@ -21,7 +21,7 @@ class App extends React.Component {
     render() {
         return (
             <ProvideExpenses>
-                <Router>
+                <Router basename={`/${process.env.REACT_APP_basename || ''}`}>
                     <MainComponent />
                 </Router>
             </ProvideExpenses>
