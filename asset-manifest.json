@@ -1,0 +1,19 @@
+{
+  "files": {
+    "main.css": "/static/css/main.9418574f.chunk.css",
+    "main.js": "/static/js/main.8f16ee0d.chunk.js",
+    "main.js.map": "/static/js/main.8f16ee0d.chunk.js.map",
+    "runtime~main.js": "/static/js/runtime~main.3368dd13.js",
+    "runtime~main.js.map": "/static/js/runtime~main.3368dd13.js.map",
+    "static/css/2.0791fb6e.chunk.css": "/static/css/2.0791fb6e.chunk.css",
+    "static/js/2.7f8d445a.chunk.js": "/static/js/2.7f8d445a.chunk.js",
+    "static/js/2.7f8d445a.chunk.js.map": "/static/js/2.7f8d445a.chunk.js.map",
+    "index.html": "/index.html",
+    "precache-manifest.b376a419f07432a7cdd24ad2d706b3ff.js": "/precache-manifest.b376a419f07432a7cdd24ad2d706b3ff.js",
+    "service-worker.js": "/service-worker.js",
+    "static/css/2.0791fb6e.chunk.css.map": "/static/css/2.0791fb6e.chunk.css.map",
+    "static/css/main.9418574f.chunk.css.map": "/static/css/main.9418574f.chunk.css.map",
+    "static/media/google_button.jpg": "/static/media/google_button.2c7794a9.jpg",
+    "static/media/pdf_logo.png": "/static/media/pdf_logo.880c7621.png"
+  }
+}
