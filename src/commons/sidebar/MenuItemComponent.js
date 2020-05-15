@@ -2,6 +2,7 @@ import React from 'react';
 import { bool, func, string } from 'prop-types';
 import { Column, Row } from 'simple-flexbox';
 import { StyleSheet, css } from 'aphrodite';
+import CollapsibleComponent from '../CollapsibleComponent';
 
 const styles = StyleSheet.create({
     activeContainer: {
@@ -41,21 +42,6 @@ const styles = StyleSheet.create({
         letterSpacing: '0.2px',
         color: '#A4A6B3',
         marginLeft: 24
-    },
-    subItems: {
-        display: 'flex',
-        transition: 'max-height 0.3s ease-out',
-        maxHeight: 500
-    },
-    subItemsHide: {
-        maxHeight: 0,
-        overflow: 'hidden',
-        ':nth-child(n) > div > span': {
-            color: 'rgba(0,0,0,0)'
-        },
-        ':nth-child(n) > div > svg': {
-            height: 0
-        }
     }
 });
 
@@ -91,6 +77,7 @@ function MenuItemComponent(props) {
         ...otherProps
     } = props;
     const Icon = icon;
+
     return (
         <Column>
             <Row
@@ -113,16 +100,13 @@ function MenuItemComponent(props) {
                     {title}
                 </span>
             </Row>
-            {
-                <Column
-                    className={css(
-                        styles.subItems,
-                        !expanded && styles.subItemsHide
-                    )}
-                >
+            {subItems && subItems.length ? (
+                <CollapsibleComponent expanded={expanded}>
                     {subItems.map((s, i) => SubItem({ ...s, expanded }, i))}
-                </Column>
-            }
+                </CollapsibleComponent>
+            ) : (
+                <div></div>
+            )}
         </Column>
     );
 }

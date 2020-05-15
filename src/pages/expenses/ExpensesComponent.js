@@ -207,6 +207,7 @@ function ExpensesComponent() {
                         {statistics.categories && (
                             <StatisticsByCategoryWidget
                                 categories={statistics.categories}
+                                showBorders
                             />
                         )}
                     </Column>

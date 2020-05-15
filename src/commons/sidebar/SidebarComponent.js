@@ -116,6 +116,7 @@ function SidebarComponent() {
             noOverlay={!isMobileValue}
             disableCloseOnEsc
             styles={styles}
+            onStateChange={state => setExpanded(state.isOpen)}
         >
             <LoadingComponent loading={initializing || loading} fullScreen />
             <div style={{ paddingTop: 30, paddingBottom: 30 }}>

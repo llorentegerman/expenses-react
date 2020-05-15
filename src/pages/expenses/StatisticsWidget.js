@@ -3,27 +3,34 @@ import { StyleSheet, css } from 'aphrodite';
 import { Column } from 'simple-flexbox';
 import { getDaysInPeriod, numberFormat } from '../../logic/utilities';
 import StatisticsByCategoryWidget from './StatisticsByCategoryWidget';
+import CollapsibleComponent from '../../commons/CollapsibleComponent';
 
 const styles = StyleSheet.create({
     statistics: {
+        borderRadius: 5,
         borderStyle: 'solid',
         borderWidth: '1px',
-        borderRadius: 5,
+        height: 'auto',
         padding: '8px 10px',
-        textAlign: 'center',
         marginTop: 10,
+        overflow: 'hidden',
+        textAlign: 'center',
         ':first-child': {
             marginTop: 0
         },
         '@media (max-width: 1080px)': {
-            minWidth: 180,
+            flexGrow: 1,
             marginTop: 10,
-            marginLeft: 4,
-            ':first-child': {
-                marginTop: 10,
-                marginLeft: 4
-            }
+            minWidth: 180
         }
+    },
+    toggleButton: {
+        cursor: 'pointer',
+        fontSize: 24,
+        fontWeight: 600,
+        position: 'absolute',
+        transitionProperty: 'opacity',
+        transitionTimingFunction: 'ease-in-out'
     }
 });
 
@@ -42,43 +49,70 @@ const borderColors = [
 
 function StatisticsWidget({ index, statistics }) {
     const [expanded, setExpanded] = useState(false);
+
     return (
-        <React.Fragment>
-            <Column
-                horizontal="start"
-                key={`statistics-${statistics.periodo}`}
-                className={css(styles.statistics)}
-                style={{
-                    borderColor: borderColors[index % borderColors.length]
-                }}
-                onClick={() => setExpanded(!expanded)}
-            >
-                <span style={{ fontWeight: 600 }}>{statistics.periodo}</span>
-                <span>
-                    Promedio: $
-                    {numberFormat(Math.round(statistics.average || 0), 0)} / día
-                </span>
-                <span>Total: ${numberFormat(statistics.total, 0)}</span>
-                <span>Días: {statistics.days}</span>
-                <span>
-                    Proyección: $
-                    {numberFormat(
-                        Math.round(
-                            getDaysInPeriod(statistics.periodo) *
-                                (statistics.average || 0)
-                        ),
-                        0
-                    )}
-                </span>
-            </Column>
-            {expanded && statistics.categories && (
-                <StatisticsByCategoryWidget
-                    categories={statistics.categories}
-                    onClick={() => setExpanded(false)}
-                    title={statistics.periodo}
-                />
+        <Column
+            horizontal="start"
+            key={`statistics-${statistics.periodo}`}
+            className={css(styles.statistics)}
+            style={{
+                borderColor: borderColors[index % borderColors.length]
+            }}
+        >
+            <span style={{ fontWeight: 600 }}>{statistics.periodo}</span>
+            <span>
+                Promedio: $
+                {numberFormat(Math.round(statistics.average || 0), 0)} / día
+            </span>
+            <span>Total: ${numberFormat(statistics.total, 0)}</span>
+            <span>Días: {statistics.days}</span>
+            <span>
+                Proyección: $
+                {numberFormat(
+                    Math.round(
+                        getDaysInPeriod(statistics.periodo) *
+                            (statistics.average || 0)
+                    ),
+                    0
+                )}
+            </span>
+
+            {statistics.categories && (
+                <React.Fragment>
+                    <div style={{ position: 'relative', width: '100%' }}>
+                        <span
+                            className={css(styles.toggleButton)}
+                            onClick={() => setExpanded(prevValue => !prevValue)}
+                            style={{
+                                top: -95,
+                                right: 0,
+                                opacity: expanded ? 0 : 1
+                            }}
+                        >
+                            +
+                        </span>
+                        <span
+                            className={css(styles.toggleButton)}
+                            onClick={() => setExpanded(prevValue => !prevValue)}
+                            style={{
+                                top: -95,
+                                right: 0,
+                                opacity: expanded ? 1 : 0
+                            }}
+                        >
+                            -
+                        </span>
+                    </div>
+                    <CollapsibleComponent expanded={expanded}>
+                        <div style={{ marginTop: 10 }}>
+                            <StatisticsByCategoryWidget
+                                categories={statistics.categories}
+                            />
+                        </div>
+                    </CollapsibleComponent>
+                </React.Fragment>
             )}
-        </React.Fragment>
+        </Column>
     );
 }
 

@@ -4,25 +4,19 @@ import { Column, Row } from 'simple-flexbox';
 import { numberFormat } from '../../logic/utilities';
 
 const styles = StyleSheet.create({
-    statistics: {
+    border: {
+        borderColor: '#17183B',
+        borderRadius: 5,
         borderStyle: 'solid',
         borderWidth: '1px',
-        borderRadius: 5,
-        padding: '8px 10px',
-        textAlign: 'left',
         marginTop: 10,
-        ':first-child': {
-            marginTop: 0
-        },
+        padding: '8px 10px'
+    },
+    statistics: {
+        textAlign: 'left',
         '@media (max-width: 1080px)': {
-            minWidth: 180,
-            marginTop: 10,
-            marginLeft: 4,
             flexGrow: 1,
-            ':first-child': {
-                marginTop: 10,
-                marginLeft: 4
-            }
+            minWidth: 180
         }
     },
     categoryStatistics: {
@@ -31,31 +25,19 @@ const styles = StyleSheet.create({
             marginTop: 0
         },
         '@media (max-width: 1080px)': {
-            minWidth: 150,
-            marginTop: 5,
             marginBottom: 5,
-            ':first-child': {
-                marginTop: 5,
-                marginBottom: 5
-            }
+            marginTop: 5,
+            minWidth: 150
         }
     }
 });
 
-function StatisticsByCategoryWidget({ categories, onClick, title }) {
+function StatisticsByCategoryWidget({ categories, showBorders, onClick }) {
     return (
         <Column
-            className={css(styles.statistics)}
+            className={css(styles.statistics, showBorders && styles.border)}
             onClick={onClick}
-            style={{
-                borderColor: '#17183B'
-            }}
         >
-            {title && (
-                <span style={{ fontWeight: 600, marginBottom: 4 }}>
-                    {title}
-                </span>
-            )}
             <Row horizontal="spaced" wrap>
                 {Object.keys(categories).map(category => {
                     const statistics = categories[category];
