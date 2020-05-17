@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { StyleSheet, css } from 'aphrodite';
-import useReactRouter from 'use-react-router';
 import { useExpenses } from '../../logic/useExpenses';
 import { LoadingComponent } from '../InitializingComponent';
 import LogoComponent from './LogoComponent';
@@ -17,6 +16,7 @@ import IconCreditCard from '../../assets/icon-creditcard';
 import IconSubscription from '../../assets/icon-subscription';
 import IconReceipt from '../../assets/icon-receipt.js';
 import { slide as Menu } from 'react-burger-menu';
+import useSidebar from './useSidebar';
 
 const stylesSeparator = StyleSheet.create({
     separator: {
@@ -70,11 +70,17 @@ const styles = {
 };
 
 function SidebarComponent() {
-    const { history, location } = useReactRouter();
     const { initializing, logout, user } = useExpenses();
     const [loading, setLoading] = useState(false);
-    const [expanded, setExpanded] = useState(false);
-    const [selectedItem, setSelectedItem] = useState(location.pathname);
+    const {
+        isOpen,
+        isExpanded,
+        isActive,
+        onMenuItemClicked,
+        setIsOpen
+    } = useSidebar();
+
+    const isMobile = window.innerWidth <= 1080;
 
     const sheets = Object.keys((user || {}).sheets || {})
         .map((value, index) => {
@@ -91,20 +97,6 @@ function SidebarComponent() {
         .filter(s => s.show)
         .sort((a, b) => a.position - b.position);
 
-    const onItemClicked = path => {
-        setExpanded(false);
-        return history.push(path);
-    };
-
-    const isSelectedItem = ({ item, section = '', exact = false }) =>
-        exact
-            ? location.pathname === `${section}/${item}`
-            : location.pathname.indexOf(`${section}/${item}`) === 0;
-
-    const isMobile = () => window.innerWidth <= 1080;
-
-    const isMobileValue = isMobile();
-
     const doLogout = () => {
         setLoading(true);
         logout();
@@ -112,11 +104,11 @@ function SidebarComponent() {
 
     return (
         <Menu
-            isOpen={!isMobileValue || expanded}
-            noOverlay={!isMobileValue}
+            isOpen={!isMobile || isOpen}
+            noOverlay={!isMobile}
             disableCloseOnEsc
             styles={styles}
-            onStateChange={state => setExpanded(state.isOpen)}
+            onStateChange={state => setIsOpen(state.isOpen)}
         >
             <LoadingComponent loading={initializing || loading} fullScreen />
             <div style={{ paddingTop: 30, paddingBottom: 30 }}>
@@ -125,8 +117,8 @@ function SidebarComponent() {
             <MenuItemComponent
                 title="Dashboard"
                 icon={IconSubscription}
-                onClick={() => onItemClicked('/dashboard')}
-                active={selectedItem === 'dashboard'}
+                onClick={() => onMenuItemClicked('/dashboard')}
+                active={isActive('/dashboard')}
             />
 
             {sheets.map(s => (
@@ -135,20 +127,15 @@ function SidebarComponent() {
                     title={s.name}
                     icon={IconOverview}
                     onClick={() =>
-                        setSelectedItem(
-                            selectedItem === `/sheet/${s.id}`
-                                ? ''
-                                : `/sheet/${s.id}`
-                        )
+                        onMenuItemClicked(`/sheet/${s.id}`, {
+                            isCollapsible: true
+                        })
                     }
-                    active={isSelectedItem({
-                        item: s.id,
-                        section: '/sheet'
-                    })}
-                    expanded={selectedItem === `/sheet/${s.id}`}
+                    active={isActive(`/sheet/${s.id}`)}
+                    expanded={isExpanded(`/sheet/${s.id}`)}
                     subItems={[
                         {
-                            title: 'Gastos',
+                            title: 'Expenses',
                             icon: (
                                 <IconReceipt
                                     height={20}
@@ -156,33 +143,27 @@ function SidebarComponent() {
                                     fill={'#DDE2FF'}
                                 />
                             ),
-                            onClick: () => onItemClicked(`/sheet/${s.id}`),
-                            active: isSelectedItem({
-                                item: s.id,
-                                section: '/sheet',
-                                exact: true
-                            })
+                            onClick: () => onMenuItemClicked(`/sheet/${s.id}`),
+                            active: isActive(`/sheet/${s.id}`, true)
                         },
                         {
-                            title: 'Categorias',
+                            title: 'Categories',
                             icon: <IconIdeas width={16} fill={'#DDE2FF'} />,
+
                             onClick: () =>
-                                onItemClicked(`/sheet/${s.id}/categories`),
-                            active: isSelectedItem({
-                                item: `sheet/${s.id}/categories`
-                            })
+                                onMenuItemClicked(`/sheet/${s.id}/categories`),
+                            active: isActive(`/sheet/${s.id}/categories`)
                         },
                         {
                             title: 'Cities',
                             icon: <IconLocation width={16} fill={'#DDE2FF'} />,
+
                             onClick: () =>
-                                onItemClicked(`/sheet/${s.id}/cities`),
-                            active: isSelectedItem({
-                                item: `sheet/${s.id}/cities`
-                            })
+                                onMenuItemClicked(`/sheet/${s.id}/cities`),
+                            active: isActive(`/sheet/${s.id}/cities`)
                         },
                         {
-                            title: 'Monedas',
+                            title: 'Currencies',
                             icon: (
                                 <IconDollarCurrency
                                     width={20}
@@ -190,14 +171,13 @@ function SidebarComponent() {
                                     style={{ marginRight: -4 }}
                                 />
                             ),
+
                             onClick: () =>
-                                onItemClicked(`/sheet/${s.id}/currencies`),
-                            active: isSelectedItem({
-                                item: `sheet/${s.id}/currencies`
-                            })
+                                onMenuItemClicked(`/sheet/${s.id}/currencies`),
+                            active: isActive(`/sheet/${s.id}/currencies`)
                         },
                         {
-                            title: 'Formas de Pago',
+                            title: 'Methods',
                             icon: (
                                 <IconCreditCard
                                     width={20}
@@ -205,11 +185,10 @@ function SidebarComponent() {
                                     style={{ marginRight: -4 }}
                                 />
                             ),
+
                             onClick: () =>
-                                onItemClicked(`/sheet/${s.id}/methods`),
-                            active: isSelectedItem({
-                                item: `sheet/${s.id}/methods`
-                            })
+                                onMenuItemClicked(`/sheet/${s.id}/methods`),
+                            active: isActive(`/sheet/${s.id}/methods`)
                         },
                         {
                             title: 'Tags',
@@ -220,27 +199,26 @@ function SidebarComponent() {
                                     style={{ marginRight: -4 }}
                                 />
                             ),
-                            onClick: () => onItemClicked(`/sheet/${s.id}/tags`),
-                            active: isSelectedItem({
-                                item: `sheet/${s.id}/tags`
-                            })
+
+                            onClick: () =>
+                                onMenuItemClicked(`/sheet/${s.id}/tags`),
+                            active: isActive(`/sheet/${s.id}/tags`)
                         },
                         {
-                            title: 'Nuevo Gasto',
+                            title: 'Add Expense',
                             icon: <IconPlus width={16} fill={'#DDE2FF'} />,
-                            onClick: () => onItemClicked(`/sheet/${s.id}/new`),
-                            active: isSelectedItem({
-                                item: `sheet/${s.id}/new`
-                            })
+
+                            onClick: () =>
+                                onMenuItemClicked(`/sheet/${s.id}/new`),
+                            active: isActive(`/sheet/${s.id}/new`)
                         },
                         {
                             title: 'Settings',
                             icon: <IconSettings width={16} fill={'#DDE2FF'} />,
+
                             onClick: () =>
-                                onItemClicked(`/sheet/${s.id}/settings`),
-                            active: isSelectedItem({
-                                item: `sheet/${s.id}/settings`
-                            })
+                                onMenuItemClicked(`/sheet/${s.id}/settings`),
+                            active: isActive(`/sheet/${s.id}/settings`)
                         }
                     ]}
                 />
@@ -249,15 +227,15 @@ function SidebarComponent() {
             <MenuItemComponent
                 title="Add Sheet"
                 icon={IconPlus}
-                onClick={() => onItemClicked('/newsheet')}
-                active={isSelectedItem({ item: 'newsheet' })}
+                onClick={() => onMenuItemClicked('/newsheet')}
+                active={isActive('/newsheet')}
             />
             <div className={css(stylesSeparator.separator)}></div>
             <MenuItemComponent
                 title="Settings"
                 icon={IconSettings}
-                onClick={() => onItemClicked('/settings')}
-                active={isSelectedItem({ item: 'Settings' })}
+                onClick={() => onMenuItemClicked('/settings')}
+                active={isActive('/settings')}
             />
             <MenuItemComponent
                 title="Logout"

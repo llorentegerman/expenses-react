@@ -25,7 +25,8 @@ const styles = StyleSheet.create({
             outline: 'none'
         },
         paddingLeft: 32,
-        paddingRight: 32
+        paddingRight: 32,
+        transition: 'all 0.2s ease-in-out'
     },
     containerSubItem: {
         height: 56,
@@ -33,7 +34,11 @@ const styles = StyleSheet.create({
         ':hover': {
             backgroundColor: 'rgba(221,226,255, 0.08)'
         },
-        paddingLeft: 64
+        paddingLeft: 64,
+        transition: 'all 0.2s ease-in-out'
+    },
+    inactiveBar: {
+        borderLeft: '3px solid #8b8d94'
     },
     title: {
         fontFamily: 'Muli',
@@ -53,7 +58,7 @@ function SubItem(props, index) {
             className={css(
                 styles.containerSubItem,
                 active && styles.activeContainer,
-                styles.activeBar
+                active ? styles.activeBar : styles.inactiveBar
             )}
             vertical="center"
             {...otherProps}
