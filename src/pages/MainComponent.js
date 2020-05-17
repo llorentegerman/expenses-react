@@ -16,12 +16,6 @@ const styles = StyleSheet.create({
         height: '100%',
         minHeight: 850
     },
-    content: {
-        marginTop: 54,
-        '@media (max-width: 1080px)': {
-            padding: 34
-        }
-    },
     mainBlock: {
         backgroundColor: '#F7F8FC',
         padding: 30,

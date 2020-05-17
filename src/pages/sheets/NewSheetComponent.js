@@ -77,7 +77,7 @@ function AddExpenseComponent() {
                             style={{ backgroundColor: 'red' }}
                             onClick={onClose}
                         >
-                            Cancelar
+                            Cancel
                         </span>
 
                         <span
@@ -85,7 +85,7 @@ function AddExpenseComponent() {
                             style={{ backgroundColor: 'green' }}
                             onClick={handleSubmit(onSave)}
                         >
-                            Guardar
+                            Save
                         </span>
                     </Row>
                 </Column>

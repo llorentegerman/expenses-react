@@ -140,18 +140,18 @@ function ExpensesComponent() {
                                 className={css(styles.addExpenseButton)}
                                 onClick={onAddSheetClick}
                             >
-                                Nuevo Gasto
+                                Add Expense
                             </span>
                             <Row
                                 className={css(styles.statisticsGlobal)}
                                 breakpoints={{ 768: { marginTop: 4 } }}
                             >
-                                Promedio Global: $
+                                Overall Average: $
                                 {numberFormat(
                                     Math.round(statistics.average || 0),
                                     0
                                 )}{' '}
-                                / día. {totalDays} días.
+                                / day. {totalDays} days.
                             </Row>
                         </Row>
 

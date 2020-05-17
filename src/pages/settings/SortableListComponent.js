@@ -238,7 +238,7 @@ function SortableListComponent({
                     style={{ backgroundColor: 'red' }}
                     onClick={onClose}
                 >
-                    Cancelar
+                    Cancel
                 </span>
 
                 <span
@@ -246,7 +246,7 @@ function SortableListComponent({
                     style={{ backgroundColor: 'green' }}
                     onClick={() => onSave(items)}
                 >
-                    Guardar
+                    Save
                 </span>
             </Row>
         </Column>

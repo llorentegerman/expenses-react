@@ -61,13 +61,13 @@ function StatisticsWidget({ index, statistics }) {
         >
             <span style={{ fontWeight: 600 }}>{statistics.periodo}</span>
             <span>
-                Promedio: $
-                {numberFormat(Math.round(statistics.average || 0), 0)} / día
+                Average: ${numberFormat(Math.round(statistics.average || 0), 0)}{' '}
+                / day
             </span>
             <span>Total: ${numberFormat(statistics.total, 0)}</span>
-            <span>Días: {statistics.days}</span>
+            <span>Days: {statistics.days}</span>
             <span>
-                Proyección: $
+                Forecast: $
                 {numberFormat(
                     Math.round(
                         getDaysInPeriod(statistics.periodo) *

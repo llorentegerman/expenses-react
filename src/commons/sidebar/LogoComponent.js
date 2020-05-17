@@ -1,7 +1,6 @@
 import React from 'react';
 import { Row } from 'simple-flexbox';
 import { StyleSheet, css } from 'aphrodite';
-// import Logo from '../../assets/icon-logo';
 import Logo from '../../assets/icon-dollar';
 
 const styles = StyleSheet.create({

@@ -95,7 +95,7 @@ function ComboItemsComponent({ title, type, options = {} }) {
             <Column>
                 <span className={css(styles.title)}>{title}</span>
                 <span className={css(styles.subtitle)}>
-                    Arrastre los elementos de la lista para ordenarlos.
+                    Drag the items on the list to sort them.
                 </span>
                 <SortableListComponent
                     items={items}

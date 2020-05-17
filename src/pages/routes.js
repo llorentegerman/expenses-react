@@ -30,28 +30,28 @@ export default function RenterRoutes() {
                 exact
                 path={`/sheet/:sheetId/categories`}
                 render={() => (
-                    <ComboItemsComponent title="Categorias" type="categories" />
+                    <ComboItemsComponent title="Categories" type="categories" />
                 )}
             />
             <Route
                 exact
                 path={`/sheet/:sheetId/cities`}
                 render={() => (
-                    <ComboItemsComponent title="Ciudades" type="cities" />
+                    <ComboItemsComponent title="Cities" type="cities" />
                 )}
             />
             <Route
                 exact
                 path={`/sheet/:sheetId/currencies`}
                 render={() => (
-                    <ComboItemsComponent title="Moneda" type="currencies" />
+                    <ComboItemsComponent title="Currencies" type="currencies" />
                 )}
             />
             <Route
                 exact
                 path={`/sheet/:sheetId/methods`}
                 render={() => (
-                    <ComboItemsComponent title="Forma de pago" type="methods" />
+                    <ComboItemsComponent title="Methods" type="methods" />
                 )}
             />
             <Route

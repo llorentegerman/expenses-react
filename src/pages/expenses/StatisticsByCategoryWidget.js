@@ -48,12 +48,12 @@ function StatisticsByCategoryWidget({ categories, showBorders, onClick }) {
                         >
                             <span style={{ fontWeight: 600 }}>{category}</span>
                             <span>
-                                Promedio: $
+                                Average: $
                                 {numberFormat(
                                     Math.round(statistics.average || 0),
                                     0
                                 )}{' '}
-                                / día
+                                / day
                             </span>
                             <span>
                                 Total: ${numberFormat(statistics.total, 0)}

@@ -282,7 +282,7 @@ function AddExpenseComponent() {
     const renderError = fieldName =>
         errors[fieldName] && (
             <span className={css(styles.errorText)}>
-                {errors[fieldName].message || 'Campo requerido'}
+                {errors[fieldName].message || 'Required field'}
             </span>
         );
 
@@ -328,7 +328,7 @@ function AddExpenseComponent() {
                         onChange={(_, { newValue }) =>
                             setValue('city', newValue)
                         }
-                        placeholder="CIUDAD"
+                        placeholder="CITY"
                         value={watch('city', (defaultExpense || {}).city || '')}
                         values={cities}
                     />
@@ -343,7 +343,7 @@ function AddExpenseComponent() {
                         onChange={(_, { newValue }) =>
                             setValue('category', newValue)
                         }
-                        placeholder="CATEGORIA"
+                        placeholder="CATEGORY"
                         value={watch(
                             'category',
                             (defaultExpense || {}).category || ''
@@ -360,7 +360,7 @@ function AddExpenseComponent() {
                     <input
                         type="text"
                         name="description"
-                        placeholder="DESCRIPCION"
+                        placeholder="DESCRIPTION"
                         onChange={e => setValue('description', e.target.value)}
                         ref={register({ required: true })}
                         className={css(styles.inputField)}
@@ -402,7 +402,7 @@ function AddExpenseComponent() {
                     <input
                         type="number"
                         name="amount"
-                        placeholder="MONTO"
+                        placeholder="AMOUNT"
                         onChange={e => setValue('amount', e.target.value)}
                         ref={register({
                             required: true,
@@ -419,7 +419,7 @@ function AddExpenseComponent() {
                         onChange={(_, { newValue }) =>
                             setValue('currency', newValue)
                         }
-                        placeholder="MONEDA"
+                        placeholder="CURRENCY"
                         value={watch(
                             'currency',
                             (defaultExpense || {}).currency || ''
@@ -437,7 +437,7 @@ function AddExpenseComponent() {
                         onChange={(_, { newValue }) =>
                             setValue('method', newValue)
                         }
-                        placeholder="METODO"
+                        placeholder="Method"
                         value={watch(
                             'method',
                             (defaultExpense || {}).method || ''
@@ -476,7 +476,7 @@ function AddExpenseComponent() {
                             style={{ backgroundColor: 'red' }}
                             onClick={onClose}
                         >
-                            Cancelar
+                            Cancel
                         </span>
 
                         <span
@@ -484,7 +484,7 @@ function AddExpenseComponent() {
                             style={{ backgroundColor: 'green' }}
                             onClick={handleSubmit(onSave)}
                         >
-                            Guardar
+                            Save
                         </span>
                     </Row>
                 </Column>
