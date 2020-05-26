@@ -14,6 +14,7 @@
         "react-async": "^10.0.1",
         "react-autosuggest": "^10.0.0",
         "react-burger-menu": "^2.6.13",
+        "react-collapsible-content": "^1.0.0",
         "react-color": "^2.17.3",
         "react-datepicker": "^2.9.6",
         "react-dom": "^16.9.0",

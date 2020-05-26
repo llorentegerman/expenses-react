@@ -1,8 +1,9 @@
 import React from 'react';
-import { bool, func, string } from 'prop-types';
+import { arrayOf, bool, func, object, string } from 'prop-types';
 import { Column, Row } from 'simple-flexbox';
 import { StyleSheet, css } from 'aphrodite';
-import CollapsibleComponent from '../CollapsibleComponent';
+import CollapsibleContent from 'react-collapsible-content';
+import SubItemComponent from './SubItemComponent';
 
 const styles = StyleSheet.create({
     activeContainer: {
@@ -21,24 +22,9 @@ const styles = StyleSheet.create({
         ':hover': {
             backgroundColor: 'rgba(221,226,255, 0.08)'
         },
-        ':focus': {
-            outline: 'none'
-        },
         paddingLeft: 32,
         paddingRight: 32,
         transition: 'all 0.2s ease-in-out'
-    },
-    containerSubItem: {
-        height: 56,
-        cursor: 'pointer',
-        ':hover': {
-            backgroundColor: 'rgba(221,226,255, 0.08)'
-        },
-        paddingLeft: 64,
-        transition: 'all 0.2s ease-in-out'
-    },
-    inactiveBar: {
-        borderLeft: '3px solid #8b8d94'
     },
     title: {
         fontFamily: 'Muli',
@@ -50,37 +36,8 @@ const styles = StyleSheet.create({
     }
 });
 
-function SubItem(props, index) {
-    const { active, expanded, icon, title, ...otherProps } = props;
-    return (
-        <Row
-            key={`subitem-${index}`}
-            className={css(
-                styles.containerSubItem,
-                active && styles.activeContainer,
-                active ? styles.activeBar : styles.inactiveBar
-            )}
-            vertical="center"
-            {...otherProps}
-        >
-            {icon}
-            <span className={css(styles.title, styles.activeTitle)}>
-                {title}
-            </span>
-        </Row>
-    );
-}
-
 function MenuItemComponent(props) {
-    const {
-        active,
-        expanded,
-        icon,
-        subItems = [],
-        title,
-        onClick,
-        ...otherProps
-    } = props;
+    const { active, expanded, icon, subItems = [], title, onClick } = props;
     const Icon = icon;
 
     return (
@@ -88,7 +45,6 @@ function MenuItemComponent(props) {
             <Row
                 vertical="center"
                 onClick={onClick}
-                {...otherProps}
                 className={`${css(
                     styles.container,
                     active && styles.activeContainer,
@@ -106,9 +62,9 @@ function MenuItemComponent(props) {
                 </span>
             </Row>
             {subItems && subItems.length ? (
-                <CollapsibleComponent expanded={expanded}>
-                    {subItems.map((s, i) => SubItem({ ...s, expanded }, i))}
-                </CollapsibleComponent>
+                <CollapsibleContent expanded={expanded}>
+                    {subItems.map((s, i) => SubItemComponent({ ...s }, i))}
+                </CollapsibleContent>
             ) : (
                 <div></div>
             )}
@@ -118,7 +74,10 @@ function MenuItemComponent(props) {
 
 MenuItemComponent.propTypes = {
     active: bool,
+    expanded: bool,
     icon: func,
+    onClick: func,
+    subItems: arrayOf(object),
     title: string
 };
 

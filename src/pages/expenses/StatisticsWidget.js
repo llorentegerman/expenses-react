@@ -3,7 +3,7 @@ import { StyleSheet, css } from 'aphrodite';
 import { Column } from 'simple-flexbox';
 import { getDaysInPeriod, numberFormat } from '../../logic/utilities';
 import StatisticsByCategoryWidget from './StatisticsByCategoryWidget';
-import CollapsibleComponent from '../../commons/CollapsibleComponent';
+import CollapsibleContent from 'react-collapsible-content';
 
 const styles = StyleSheet.create({
     statistics: {
@@ -103,13 +103,13 @@ function StatisticsWidget({ index, statistics }) {
                             -
                         </span>
                     </div>
-                    <CollapsibleComponent expanded={expanded}>
+                    <CollapsibleContent expanded={expanded}>
                         <div style={{ marginTop: 10 }}>
                             <StatisticsByCategoryWidget
                                 categories={statistics.categories}
                             />
                         </div>
-                    </CollapsibleComponent>
+                    </CollapsibleContent>
                 </React.Fragment>
             )}
         </Column>
