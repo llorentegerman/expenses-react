@@ -45,6 +45,7 @@ const styles = StyleSheet.create({
         }
     },
     title: {
+        display: 'none',
         fontFamily: 'Muli',
         fontStyle: 'normal',
         fontWeight: 'bold',
@@ -55,8 +56,8 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         whiteSpace: 'nowrap',
         '@media (max-width: 1080px)': {
-            marginLeft: 36,
-            maxWidth: '30%'
+            display: 'block',
+            marginLeft: 50
         },
         '@media (max-width: 468px)': {
             fontSize: 20
@@ -89,7 +90,7 @@ function HeaderComponent(props) {
         return <div></div>;
     }
 
-    let title = location.pathname.split('/').pop();
+    let title = '';
     if (location.pathname.indexOf('/sheet/') === 0) {
         const sheetId = location.pathname.split('/')[2];
         const sheet = user.sheets[sheetId];
@@ -99,7 +100,7 @@ function HeaderComponent(props) {
             title = '';
         }
     }
-    title = '';
+
     return (
         <Row
             className={css(styles.container)}
@@ -108,7 +109,7 @@ function HeaderComponent(props) {
             {...props}
         >
             <span className={css(styles.title)}>{title}</span>
-            <Row vertical="center">
+            <Row flexGrow={1} vertical="center" horizontal="flex-end">
                 <div className={css(styles.iconStyles)}>
                     <IconSearch />
                 </div>

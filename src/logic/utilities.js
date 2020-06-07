@@ -12,6 +12,14 @@ export const numberFormat = (value, decimals = 2) => {
 export const getDaysInPeriod = period =>
     moment(`${period}-01`, 'YYYY-MM-DD').daysInMonth();
 
+export const isDateBetweenDates = (date, from, to) => {
+    const value = moment(date);
+    return (
+        (!from || moment(from).isSameOrBefore(value, 'day')) &&
+        (!to || moment(to).isSameOrAfter(value, 'day'))
+    );
+};
+
 export const isFileAnImage = file =>
     !(
         (file.type && file.type !== 'image/jpeg') ||
@@ -35,4 +43,40 @@ export const sortExpensesByDate = data => {
         return a > b ? -1 : a < b ? 1 : 0;
     });
     return array;
+};
+
+export const applyFilters = (
+    expenses,
+    {
+        amountFrom,
+        amountTo,
+        categories,
+        cities,
+        currencies,
+        dateFrom,
+        dateTo,
+        methods,
+        tags
+    }
+) => {
+    return expenses.filter(
+        expense =>
+            (!categories ||
+                categories.length === 0 ||
+                categories.includes(expense.category)) &&
+            (!cities || cities.length === 0 || cities.includes(expense.city)) &&
+            (!currencies ||
+                currencies.length === 0 ||
+                currencies.includes(expense.currency)) &&
+            (!methods ||
+                methods.length === 0 ||
+                methods.includes(expense.method)) &&
+            (!tags ||
+                tags.length === 0 ||
+                expense.tags.split(',').filter(tag => tags.includes(tag))
+                    .length > 0) &&
+            isDateBetweenDates(expense.date, dateFrom, dateTo) &&
+            (!amountFrom || Number(amountFrom) <= expense.amount) &&
+            (!amountTo || Number(amountTo) >= expense.amount)
+    );
 };

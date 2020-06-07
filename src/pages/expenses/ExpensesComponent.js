@@ -4,12 +4,14 @@ import useReactRouter from 'use-react-router';
 import ReactPaginate from 'react-paginate';
 import { Column, Row } from 'simple-flexbox';
 import FlipMove from 'react-flip-move';
+import Modal from 'react-modal';
 import { useSheetChangesSubscription } from '../../logic/useSheetChangesSubscription';
 import ExpenseItem from './ExpenseItem';
-import { numberFormat } from '../../logic/utilities';
+import { applyFilters, numberFormat } from '../../logic/utilities';
 import { LoadingComponent } from '../../commons/InitializingComponent';
 import StatisticsWidget from './StatisticsWidget';
 import StatisticsByCategoryWidget from './StatisticsByCategoryWidget';
+import FiltersComponent from './FiltersComponent';
 import '../../commons/styles/pagination.css';
 
 const styles = StyleSheet.create({
@@ -29,6 +31,12 @@ const styles = StyleSheet.create({
             backgroundColor: '#198c19'
         }
     },
+    link: {
+        color: '#2c689c',
+        cursor: 'pointer',
+        fontSize: 14,
+        textDecoration: 'underline'
+    },
     statisticsGlobal: {
         border: '1px solid #fa7159',
         borderRadius: 5,
@@ -36,39 +44,65 @@ const styles = StyleSheet.create({
         padding: '8px 10px',
         textAlign: 'center'
     },
-    sideColumns: {
+    sideColumnsLeft: {
+        flexGrow: 1,
+        width: '100%',
+        maxWidth: 240,
+        minWidth: 80,
+        '@media (max-width: 1080px)': {
+            maxWidth: 880
+        }
+    },
+    sideColumnsRight: {
         flexGrow: 1,
         width: '100%',
         maxWidth: 240,
         minWidth: 220,
+        paddingTop: 56,
+        paddingLeft: 10,
         '@media (max-width: 1080px)': {
+            padding: 0,
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between',
             maxWidth: 880,
-            marginTop: -10
+            marginTop: 20
         }
     },
-    sheetName: {
-        display: 'none',
-        '@media (max-width: 1080px)': {
-            display: 'block',
-            marginTop: 10
+    showFiltersButton: {
+        backgroundColor: '#2c689c',
+        borderRadius: 5,
+        color: 'white',
+        cursor: 'pointer',
+        fontWeight: 600,
+        padding: '8px 10px',
+        textAlign: 'center',
+        margin: '0px 8px',
+        ':hover': {
+            backgroundColor: '#2c689c'
+        },
+        '@media (max-width: 768px)': {
+            marginTop: 10,
+            marginLeft: 0
         }
     }
 });
 
 function ExpensesComponent() {
     const { history, match } = useReactRouter();
-    const {
-        expenses,
-        loading,
-        sheetName,
-        statistics,
-        tags
-    } = useSheetChangesSubscription(match.params.sheetId);
+    const { expenses, loading, statistics, tags } = useSheetChangesSubscription(
+        match.params.sheetId
+    );
     const [expensesFiltered, setExpensesFiltered] = useState([]);
+    const [expensesPaginated, setExpensesPaginated] = useState([]);
+    const [showFilters, setShowFilters] = useState(false);
+    const [currentFilters, setCurrentFilters] = useState({});
 
-    useEffect(() => setExpensesFiltered([...expenses].splice(0, 10)), [
-        expenses
-    ]);
+    useEffect(() => {
+        const filtered = applyFilters([...expenses], currentFilters);
+        setExpensesFiltered(filtered);
+        setExpensesPaginated(filtered.splice(0, 10));
+    }, [expenses, currentFilters]);
 
     const onAddSheetClick = () =>
         history.push(`/sheet/${match.params.sheetId}/new`);
@@ -79,7 +113,7 @@ function ExpensesComponent() {
     useEffect(() => window.scrollTo(0, 0), []);
 
     const handlePageClick = ({ selected }) => {
-        setExpensesFiltered([...expenses].splice(selected * 10, 10));
+        setExpensesPaginated([...expensesFiltered].splice(selected * 10, 10));
     };
 
     const isMobile = () => window.innerWidth <= 1080;
@@ -100,6 +134,9 @@ function ExpensesComponent() {
         totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
     }
 
+    const hasFilters = Object.keys(currentFilters).length > 0;
+    const pageCount = expensesFiltered.length / 10;
+
     return (
         <LoadingComponent loading={loading} fullScreen>
             <Column horizontal="center">
@@ -113,7 +150,7 @@ function ExpensesComponent() {
                         }
                     }}
                 >
-                    <span className={css(styles.sideColumns)}></span>
+                    <span className={css(styles.sideColumnsLeft)}></span>
 
                     <Column
                         style={{ maxWidth: 880, width: '100%' }}
@@ -121,10 +158,6 @@ function ExpensesComponent() {
                             1080: { padding: '0px 10px', maxWidth: 880 }
                         }}
                     >
-                        <span className={css(styles.sheetName)}>
-                            {sheetName}
-                        </span>
-
                         <Row
                             className={css(styles.buttonsContainer)}
                             vertical="center"
@@ -143,20 +176,56 @@ function ExpensesComponent() {
                                 Add Expense
                             </span>
                             <Row
-                                className={css(styles.statisticsGlobal)}
-                                breakpoints={{ 768: { marginTop: 4 } }}
+                                breakpoints={{
+                                    768: {
+                                        flexDirection: 'column',
+                                        alignItems: 'flex-start'
+                                    }
+                                }}
                             >
-                                Overall Average: $
-                                {numberFormat(
-                                    Math.round(statistics.average || 0),
-                                    0
-                                )}{' '}
-                                / day. {totalDays} days.
+                                <Row
+                                    vertical="end"
+                                    breakpoints={{
+                                        768: {
+                                            flexDirection: 'row-reverse'
+                                        }
+                                    }}
+                                >
+                                    {hasFilters && (
+                                        <span
+                                            className={css(styles.link)}
+                                            onClick={() =>
+                                                setCurrentFilters({})
+                                            }
+                                        >
+                                            clear filters
+                                        </span>
+                                    )}
+                                    <span
+                                        className={css(
+                                            styles.showFiltersButton
+                                        )}
+                                        onClick={() => setShowFilters(true)}
+                                    >
+                                        Filters
+                                    </span>
+                                </Row>
+                                <Row
+                                    className={css(styles.statisticsGlobal)}
+                                    breakpoints={{ 768: { marginTop: 10 } }}
+                                >
+                                    Overall Average: $
+                                    {numberFormat(
+                                        Math.round(statistics.average || 0),
+                                        0
+                                    )}{' '}
+                                    / day. {totalDays} days.
+                                </Row>
                             </Row>
                         </Row>
 
                         <FlipMove>
-                            {(expensesFiltered || []).map(e => (
+                            {(expensesPaginated || []).map(e => (
                                 <ExpenseItem
                                     key={e.id}
                                     expense={e}
@@ -166,32 +235,23 @@ function ExpensesComponent() {
                             ))}
                         </FlipMove>
 
-                        <ReactPaginate
-                            previousLabel={'<'}
-                            nextLabel={'>'}
-                            breakLabel={'...'}
-                            breakClassName={'break-me'}
-                            pageCount={expenses.length / 10}
-                            marginPagesDisplayed={2}
-                            pageRangeDisplayed={isMobile() ? 2 : 5}
-                            onPageChange={handlePageClick}
-                            containerClassName={'pagination'}
-                            subContainerClassName={'pages pagination'}
-                            activeClassName={'active'}
-                        />
+                        {pageCount > 0 && (
+                            <ReactPaginate
+                                previousLabel={'<'}
+                                nextLabel={'>'}
+                                breakLabel={'...'}
+                                breakClassName={'break-me'}
+                                pageCount={pageCount}
+                                marginPagesDisplayed={2}
+                                pageRangeDisplayed={isMobile() ? 2 : 5}
+                                onPageChange={handlePageClick}
+                                containerClassName={'pagination'}
+                                subContainerClassName={'pages pagination'}
+                                activeClassName={'active'}
+                            />
+                        )}
                     </Column>
-                    <Column
-                        className={css(styles.sideColumns)}
-                        style={{ paddingTop: 56, paddingLeft: 10 }}
-                        breakpoints={{
-                            1080: {
-                                padding: 0,
-                                flexDirection: 'row',
-                                flexWrap: 'wrap',
-                                justifyContent: 'space-between'
-                            }
-                        }}
-                    >
+                    <Column className={css(styles.sideColumnsRight)}>
                         {periodos
                             .slice(0)
                             .reverse()
@@ -213,6 +273,38 @@ function ExpensesComponent() {
                     </Column>
                 </Row>
             </Column>
+            <Modal
+                isOpen={showFilters}
+                onRequestClose={() => setShowFilters(false)}
+                style={{
+                    content: {
+                        border: '1px solid #2c689c',
+                        borderRadius: 4,
+                        top: '50%',
+                        left: '50%',
+                        right: 'auto',
+                        bottom: 'auto',
+                        marginRight: '-50%',
+                        transform: 'translate(-50%, -50%)',
+                        padding: 20,
+                        zIndex: 1102
+                    },
+                    overlay: {
+                        backgroundColor: 'rgba(10, 10, 10, .3)',
+                        zIndex: 1101
+                    }
+                }}
+                ariaHideApp={false}
+            >
+                <FiltersComponent
+                    filters={currentFilters}
+                    onApply={filters => {
+                        setCurrentFilters(filters);
+                        setShowFilters(false);
+                    }}
+                    onClose={() => setShowFilters(false)}
+                />
+            </Modal>
         </LoadingComponent>
     );
 }

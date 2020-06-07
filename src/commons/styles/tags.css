@@ -1,5 +1,7 @@
 .react-tags {
-    height: 40px;
+    border-radius: 2px;
+    min-height: 40px;
+    height: auto;
     margin-top: 4px;
     border: 1px solid #D1D1D1;
     padding: 1px;
@@ -62,6 +64,7 @@
   .react-tags__search-input {
     height: 38px;
     max-width: 100%;
+    width: calc(100% - 4px) !important;
   
     /* remove styles and layout from this element */
     margin: 0;

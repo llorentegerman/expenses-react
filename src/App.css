@@ -1,1 +1,5 @@
 @import url('https://fonts.googleapis.com/css?family=Muli');
+
+.ReactModal__Body--open {
+    overflow: hidden;
+}

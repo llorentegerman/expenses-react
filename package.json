@@ -22,6 +22,7 @@
         "react-flip-move": "^3.0.3",
         "react-hook-form": "^3.23.10",
         "react-images": "^1.0.0",
+        "react-modal": "^3.11.2",
         "react-paginate": "^6.3.0",
         "react-photo-gallery": "^8.0.0",
         "react-router-dom": "^5.0.1",

@@ -29,6 +29,9 @@ const styles = StyleSheet.create({
         padding: '10px 20px',
         '@media (max-width: 488px)': {
             padding: '5px 10px'
+        },
+        ':last-child': {
+            marginBottom: 0
         }
     },
     currency: {
