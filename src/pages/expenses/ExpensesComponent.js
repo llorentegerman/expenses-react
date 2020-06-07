@@ -101,7 +101,7 @@ function ExpensesComponent() {
     useEffect(() => {
         const filtered = applyFilters([...expenses], currentFilters);
         setExpensesFiltered(filtered);
-        setExpensesPaginated(filtered.splice(0, 10));
+        setExpensesPaginated([...filtered].splice(0, 10));
     }, [expenses, currentFilters]);
 
     const onAddSheetClick = () =>

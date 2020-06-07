@@ -25,7 +25,6 @@ const getExpenseById = async ({ sheetId, expenseId }) => {
     if (!expenseId) {
         return null;
     }
-    await timeout(1000);
     return fakeData.sheets['ABC'].expenses[expenseId];
 };
 
@@ -34,7 +33,7 @@ const getExpensesRef = ({ sheetId }) => getRef(`/sheets/${sheetId}/expenses`);
 const getFile = async filePath => '';
 
 const getMetadata = async ({ sheetId }) => {
-    await timeout(1000);
+    await timeout(500);
     return fakeData.sheets['ABC'].metadata;
 };
 
