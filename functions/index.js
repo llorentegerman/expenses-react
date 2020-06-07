@@ -36,9 +36,7 @@ exports.updateStatics = functions.database
                 return;
             }
             total += Number(i.amount);
-            const period = moment(Number(i.date))
-                .utcOffset(-3)
-                .format('YYYY-MM');
+            const period = moment(Number(i.date)).format('YYYY-MM');
             if (!minDate || Number(i.date) < minDate) {
                 minDate = Number(i.date);
                 minPeriod = period;
@@ -71,18 +69,16 @@ exports.updateStatics = functions.database
         Object.keys(periods).forEach(p => {
             let periodDays =
                 moment()
-                    .utcOffset(-3)
                     .startOf('day')
                     .diff(
                         (p === minPeriod
-                            ? moment(minDate).utcOffset(-3)
+                            ? moment(minDate)
                             : moment(`${p}-01`, 'YYYY-MM-DD')
                         ).startOf('day'),
                         'days'
                     ) + 1;
             if (
                 moment()
-                    .utcOffset(-3)
                     .startOf('day')
                     .isSameOrAfter(
                         moment(`${p}-01`, 'YYYY-MM-DD')
@@ -96,7 +92,7 @@ exports.updateStatics = functions.database
                         .startOf('day')
                         .diff(
                             (p === minPeriod
-                                ? moment(minDate).utcOffset(-3)
+                                ? moment(minDate)
                                 : moment(`${p}-01`, 'YYYY-MM-DD')
                             ).startOf('day'),
                             'days'
@@ -113,14 +109,8 @@ exports.updateStatics = functions.database
 
         const totalDays =
             moment()
-                .utcOffset(-3)
                 .startOf('day')
-                .diff(
-                    moment(minDate)
-                        .utcOffset(-3)
-                        .startOf('day'),
-                    'days'
-                ) + 1;
+                .diff(moment(minDate).startOf('day'), 'days') + 1;
 
         Object.keys(categories).forEach(c => {
             categories[c].average = categories[c].total / totalDays;
