@@ -117,6 +117,7 @@ function ExpensesComponent() {
     };
 
     const isMobile = () => window.innerWidth <= 1080;
+    const isXS = () => window.innerWidth <= 468;
 
     const periodos = [];
     let totalDays = 0;
@@ -242,8 +243,10 @@ function ExpensesComponent() {
                                 breakLabel={'...'}
                                 breakClassName={'break-me'}
                                 pageCount={pageCount}
-                                marginPagesDisplayed={2}
-                                pageRangeDisplayed={isMobile() ? 2 : 5}
+                                marginPagesDisplayed={isXS() ? 1 : 2}
+                                pageRangeDisplayed={
+                                    isXS() ? 1 : isMobile() ? 2 : 5
+                                }
                                 onPageChange={handlePageClick}
                                 containerClassName={'pagination'}
                                 subContainerClassName={'pages pagination'}

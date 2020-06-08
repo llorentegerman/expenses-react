@@ -286,7 +286,13 @@ function AddExpenseComponent() {
             </span>
         );
 
-    const tagsValues = (watch('tags') || '')
+    const tagsValues = (
+        (watch('tags') !== undefined
+            ? watch('tags')
+            : defaultExpense
+            ? defaultExpense.tags
+            : '') || ''
+    )
         .split(',')
         .filter(e => !!e)
         .map(v => ({ id: v, name: v }));
