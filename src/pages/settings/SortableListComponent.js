@@ -8,7 +8,7 @@ import arrayMove from 'array-move';
 import { StyleSheet, css } from 'aphrodite';
 import { Column, Row } from 'simple-flexbox';
 import Switch from 'react-switch';
-import ColorPickerComponent from '../../commons/ColorPickerComponent';
+import { ColorPickerComponent } from '../../components';
 import IconStar from '../../assets/icon-star';
 import IconStarFilled from '../../assets/icon-star-filled';
 import IconRemove from '../../assets/icon-remove';

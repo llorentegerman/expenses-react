@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, css } from 'aphrodite';
 import { Column, Row } from 'simple-flexbox';
 import { useExpenses } from '../../logic/useExpenses';
-import { LoadingComponent } from '../../commons/InitializingComponent';
+import { LoadingComponent } from '../../components';
 import GoogleButton from '../../assets/google_button.jpg';
 
 const styles = StyleSheet.create({

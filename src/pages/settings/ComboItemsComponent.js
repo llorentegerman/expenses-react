@@ -4,7 +4,7 @@ import { StyleSheet, css } from 'aphrodite';
 import { Column } from 'simple-flexbox';
 import { useAsync } from 'react-async';
 import firebaseClient from '../../logic/firebaseClient';
-import { LoadingComponent } from '../../commons/InitializingComponent';
+import { LoadingComponent } from '../../components';
 import SortableListComponent from './SortableListComponent';
 
 const styles = StyleSheet.create({

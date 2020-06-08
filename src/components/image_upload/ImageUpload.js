@@ -4,12 +4,12 @@ import { Column } from 'simple-flexbox';
 import { StyleSheet, css } from 'aphrodite';
 import Gallery from 'react-photo-gallery';
 import Carousel, { Modal, ModalGateway } from 'react-images';
-import IconExport from '../assets/icon-export';
-import IconRemove from '../assets/icon-remove';
-import IconRotate from '../assets/icon-rotate';
-import PdfLogo from '../assets/pdf_logo.png';
-import { LoadingComponent } from './InitializingComponent';
-import { isFileAnImage } from '../logic/utilities';
+import IconExport from '../../assets/icon-export';
+import IconRemove from '../../assets/icon-remove';
+import IconRotate from '../../assets/icon-rotate';
+import PdfLogo from '../../assets/pdf_logo.png';
+import { LoadingComponent } from '../loading';
+import { isFileAnImage } from '../../logic/utilities';
 
 const maxFilesCount = 10;
 

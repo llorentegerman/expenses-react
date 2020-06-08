@@ -9,11 +9,13 @@ import ReactTags from 'react-tag-autocomplete';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useExpenses } from '../../logic/useExpenses';
 import firebaseClient from '../../logic/firebaseClient';
-import { LoadingComponent } from '../../commons/InitializingComponent';
-import ImageUploadComponent from '../../commons/ImageUpload';
-import AutosuggestCustom from '../../commons/AutosuggestCustom';
+import {
+    AutosuggestCustom,
+    ImageUploadComponent,
+    LoadingComponent
+} from '../../components';
 import { isFileAnImage } from '../../logic/utilities';
-import '../../commons/styles/tags.css';
+import '../../components/styles/tags.css';
 
 const styles = StyleSheet.create({
     button: {

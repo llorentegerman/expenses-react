@@ -6,7 +6,7 @@ import useForm from 'react-hook-form';
 import { Column, Row } from 'simple-flexbox';
 import { useExpenses } from '../../logic/useExpenses';
 import firebaseClient from '../../logic/firebaseClient';
-import { LoadingComponent } from '../../commons/InitializingComponent';
+import { LoadingComponent } from '../../components';
 
 const styles = StyleSheet.create({
     button: {

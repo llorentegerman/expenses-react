@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, css } from 'aphrodite';
 import { useExpenses } from '../../logic/useExpenses';
-import { LoadingComponent } from '../InitializingComponent';
+import { LoadingComponent } from '../loading';
 import LogoComponent from './LogoComponent';
 import MenuItemComponent from './MenuItemComponent';
 import IconOverview from '../../assets/icon-overview.js';

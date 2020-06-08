@@ -96,6 +96,4 @@ function LoadingComponent({ children, loading, fullScreen }) {
     );
 }
 
-export default InitializingComponent;
-
-export { LoadingComponent };
+export { LoadingComponent, InitializingComponent };

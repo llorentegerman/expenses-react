@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, css } from 'aphrodite';
 import { Column } from 'simple-flexbox';
 import useReactRouter from 'use-react-router';
-import { LoadingComponent } from '../../commons/InitializingComponent';
+import { LoadingComponent } from '../../components';
 import SortableListComponent from './SortableListComponent';
 import firebaseClient from '../../logic/firebaseClient';
 import { useExpenses } from '../../logic/useExpenses';

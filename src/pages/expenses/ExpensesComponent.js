@@ -8,11 +8,11 @@ import Modal from 'react-modal';
 import { useSheetChangesSubscription } from '../../logic/useSheetChangesSubscription';
 import ExpenseItem from './ExpenseItem';
 import { applyFilters, numberFormat } from '../../logic/utilities';
-import { LoadingComponent } from '../../commons/InitializingComponent';
+import { LoadingComponent } from '../../components';
 import StatisticsWidget from './StatisticsWidget';
 import StatisticsByCategoryWidget from './StatisticsByCategoryWidget';
 import FiltersComponent from './FiltersComponent';
-import '../../commons/styles/pagination.css';
+import '../../components/styles/pagination.css';
 
 const styles = StyleSheet.create({
     buttonsContainer: {

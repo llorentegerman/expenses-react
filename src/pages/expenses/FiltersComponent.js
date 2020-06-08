@@ -7,8 +7,8 @@ import ReactTags from 'react-tag-autocomplete';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import firebaseClient from '../../logic/firebaseClient';
-import { LoadingComponent } from '../../commons/InitializingComponent';
-import '../../commons/styles/tags.css';
+import { LoadingComponent } from '../../components';
+import '../../components/styles/tags.css';
 
 const styles = StyleSheet.create({
     button: {
