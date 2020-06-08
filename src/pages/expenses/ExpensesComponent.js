@@ -1,18 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, css } from 'aphrodite';
 import useReactRouter from 'use-react-router';
-import ReactPaginate from 'react-paginate';
 import { Column, Row } from 'simple-flexbox';
 import FlipMove from 'react-flip-move';
 import Modal from 'react-modal';
 import { useSheetChangesSubscription } from '../../logic/useSheetChangesSubscription';
 import ExpenseItem from './ExpenseItem';
 import { applyFilters, numberFormat } from '../../logic/utilities';
-import { LoadingComponent } from '../../components';
+import { LoadingComponent, PaginationComponent } from '../../components';
 import StatisticsWidget from './StatisticsWidget';
 import StatisticsByCategoryWidget from './StatisticsByCategoryWidget';
 import FiltersComponent from './FiltersComponent';
-import '../../components/styles/pagination.css';
 
 const styles = StyleSheet.create({
     buttonsContainer: {
@@ -115,9 +113,6 @@ function ExpensesComponent() {
     const handlePageClick = ({ selected }) => {
         setExpensesPaginated([...expensesFiltered].splice(selected * 10, 10));
     };
-
-    const isMobile = () => window.innerWidth <= 1080;
-    const isXS = () => window.innerWidth <= 468;
 
     const periodos = [];
     let totalDays = 0;
@@ -236,23 +231,10 @@ function ExpensesComponent() {
                             ))}
                         </FlipMove>
 
-                        {pageCount > 0 && (
-                            <ReactPaginate
-                                previousLabel={'<'}
-                                nextLabel={'>'}
-                                breakLabel={'...'}
-                                breakClassName={'break-me'}
-                                pageCount={pageCount}
-                                marginPagesDisplayed={isXS() ? 1 : 2}
-                                pageRangeDisplayed={
-                                    isXS() ? 1 : isMobile() ? 2 : 5
-                                }
-                                onPageChange={handlePageClick}
-                                containerClassName={'pagination'}
-                                subContainerClassName={'pages pagination'}
-                                activeClassName={'active'}
-                            />
-                        )}
+                        <PaginationComponent
+                            pageCount={pageCount}
+                            onPageChange={handlePageClick}
+                        />
                     </Column>
                     <Column className={css(styles.sideColumnsRight)}>
                         {periodos

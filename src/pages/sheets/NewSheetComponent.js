@@ -6,7 +6,7 @@ import useForm from 'react-hook-form';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useExpenses } from '../../logic/useExpenses';
 import firebaseClient from '../../logic/firebaseClient';
-import { LoadingComponent } from '../../components';
+import { InputComponent, LoadingComponent } from '../../components';
 
 const styles = StyleSheet.create({
     button: {
@@ -21,10 +21,6 @@ const styles = StyleSheet.create({
     errorText: {
         color: 'red',
         width: '95%'
-    },
-    inputField: {
-        width: '100%',
-        marginTop: 4
     }
 });
 
@@ -57,13 +53,11 @@ function AddExpenseComponent() {
         <LoadingComponent loading={loading} fullScreen>
             <Column style={{ padding: 25, marginTop: 5 }} horizontal="center">
                 <Column style={{ width: '100%', maxWidth: 500 }}>
-                    <input
-                        type="text"
+                    <InputComponent
                         name="name"
                         placeholder="NOMBRE"
                         onChange={e => setValue('name', e.target.value)}
                         ref={register({ required: true })}
-                        className={css(styles.inputField)}
                     />
                     {renderError('name')}
 

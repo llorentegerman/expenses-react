@@ -9,7 +9,8 @@ const theme = {
         height: 40,
         fontSize: 16,
         marginTop: 4,
-        width: '99%'
+        outline: 'none',
+        width: 'calc(100% - 8px)'
     },
     inputFocused: {
         outline: 'none'

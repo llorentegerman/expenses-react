@@ -45,6 +45,36 @@ export const sortExpensesByDate = data => {
     return array;
 };
 
+export const mapMetadataKeysToArray = (metadata, metadataKey) =>
+    (Object.keys((metadata || {})[metadataKey] || {}) || []).sort(
+        (a, b) =>
+            metadata[metadataKey][a].position -
+            metadata[metadataKey][b].position
+    );
+
+export const mapArrayToTags = array =>
+    (array && array.map(v => ({ id: v, name: v }))) || [];
+
+export const extractTagsFromMetadata = metadata => {
+    const categories = mapArrayToTags(
+        mapMetadataKeysToArray(metadata, 'categories')
+    );
+    const cities = mapArrayToTags(mapMetadataKeysToArray(metadata, 'cities'));
+    const currencies = mapArrayToTags(
+        mapMetadataKeysToArray(metadata, 'currencies')
+    );
+    const methods = mapArrayToTags(mapMetadataKeysToArray(metadata, 'methods'));
+    const tags = mapArrayToTags(mapMetadataKeysToArray(metadata, 'tags'));
+
+    return {
+        categories,
+        cities,
+        currencies,
+        methods,
+        tags
+    };
+};
+
 export const applyFilters = (
     expenses,
     {

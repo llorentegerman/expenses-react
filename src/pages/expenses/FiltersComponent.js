@@ -3,12 +3,14 @@ import { StyleSheet, css } from 'aphrodite';
 import { Column, Row } from 'simple-flexbox';
 import { useAsync } from 'react-async';
 import useReactRouter from 'use-react-router';
-import ReactTags from 'react-tag-autocomplete';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 import firebaseClient from '../../logic/firebaseClient';
-import { LoadingComponent } from '../../components';
-import '../../components/styles/tags.css';
+import {
+    DatePickerComponent,
+    InputComponent,
+    LoadingComponent,
+    TagsComponent
+} from '../../components';
+import { extractTagsFromMetadata, mapArrayToTags } from '../../logic/utilities';
 
 const styles = StyleSheet.create({
     button: {
@@ -43,26 +45,12 @@ const styles = StyleSheet.create({
             minWidth: '80vw'
         }
     },
-    inputField: {
-        height: 40,
-        fontSize: 16,
-        padding: 0,
-        margin: 0,
-        marginTop: 4,
-        width: 'calc(100% - 4px)'
-    },
     title: {
         margin: 0
     },
     subTitle: {
         margin: '10px 0px 2px 0px',
         fontSize: 16
-    },
-    reactTagsContainer: {
-        ':nth-child(n) > div': {
-            border: '1px solid rgb(118, 118, 118)',
-            width: 'calc(100% - 4px)'
-        }
     },
     inputGroupRow: {
         width: '50%',
@@ -85,46 +73,22 @@ function FiltersComponent({ filters = {}, onApply, onClose }) {
     const [currentFilters, setCurrentFilters] = useState({
         amountFrom: filters.amountFrom || '',
         amountTo: filters.amountTo || '',
-        categories:
-            (filters.categories &&
-                filters.categories.map(v => ({ id: v, name: v }))) ||
-            [],
-        cities:
-            (filters.cities && filters.cities.map(v => ({ id: v, name: v }))) ||
-            [],
-        currencies:
-            (filters.currencies &&
-                filters.currencies.map(v => ({ id: v, name: v }))) ||
-            [],
-        methods:
-            (filters.methods &&
-                filters.methods.map(v => ({ id: v, name: v }))) ||
-            [],
-        tags:
-            (filters.tags && filters.tags.map(v => ({ id: v, name: v }))) || [],
+        categories: mapArrayToTags(filters.categories),
+        cities: mapArrayToTags(filters.cities),
+        currencies: mapArrayToTags(filters.currencies),
+        methods: mapArrayToTags(filters.methods),
+        tags: mapArrayToTags(filters.tags),
         dateFrom: filters.dateFrom && new Date(filters.dateFrom),
         dateTo: filters.dateTo && new Date(filters.dateTo)
     });
 
-    const categories = metadata
-        ? Object.keys(metadata.categories).map(v => ({ id: v, name: v }))
-        : [];
-
-    const cities = metadata
-        ? Object.keys(metadata.cities).map(v => ({ id: v, name: v }))
-        : [];
-
-    const currencies = metadata
-        ? Object.keys(metadata.currencies).map(v => ({ id: v, name: v }))
-        : [];
-
-    const methods = metadata
-        ? Object.keys(metadata.methods).map(v => ({ id: v, name: v }))
-        : [];
-
-    const tags = metadata
-        ? Object.keys(metadata.tags).map(v => ({ id: v, name: v }))
-        : [];
+    const {
+        categories,
+        cities,
+        currencies,
+        methods,
+        tags
+    } = extractTagsFromMetadata(metadata);
 
     const onApplyFilters = () => {
         const newFilters = {
@@ -175,17 +139,13 @@ function FiltersComponent({ filters = {}, onApply, onClose }) {
     const renderTagFilter = ({ title, type, suggestions, noStyles }) => (
         <Column flexGrow={1} className={!noStyles && css(styles.inputGroupRow)}>
             <h3 className={css(styles.subTitle)}>{title}:</h3>
-            <Column flexGrow={1} className={css(styles.reactTagsContainer)}>
-                <ReactTags
-                    tags={currentFilters[type]}
-                    suggestions={suggestions}
-                    onDelete={index => onTagDelete(type, index)}
-                    onAddition={tag => onTagAdd(type, tag)}
-                    minQueryLength={0}
-                    maxSuggestionsLength={10}
-                    placeholder={`Select ${title}`}
-                />
-            </Column>
+            <TagsComponent
+                onAddition={tag => onTagAdd(type, tag)}
+                onDelete={index => onTagDelete(type, index)}
+                suggestions={suggestions}
+                placeholder={`Select ${title}`}
+                tags={currentFilters[type]}
+            />
         </Column>
     );
 
@@ -246,7 +206,7 @@ function FiltersComponent({ filters = {}, onApply, onClose }) {
                             className={css(styles.inputGroupRow)}
                         >
                             <h3 className={css(styles.subTitle)}>Date From:</h3>
-                            <DatePicker
+                            <DatePickerComponent
                                 startOpen={false}
                                 name="date-from"
                                 selected={
@@ -257,19 +217,10 @@ function FiltersComponent({ filters = {}, onApply, onClose }) {
                                 onChange={date =>
                                     onValueChange('dateFrom', date)
                                 }
-                                dateFormat="dd/MM/yyyy"
-                                customInput={
-                                    <input
-                                        type="text"
-                                        className={css(styles.inputField)}
-                                        value={
-                                            currentFilters.dateFrom
-                                                ? new Date(
-                                                      currentFilters.dateFrom
-                                                  )
-                                                : null
-                                        }
-                                    />
+                                value={
+                                    currentFilters.dateFrom
+                                        ? new Date(currentFilters.dateFrom)
+                                        : null
                                 }
                             />
                         </Column>
@@ -278,7 +229,7 @@ function FiltersComponent({ filters = {}, onApply, onClose }) {
                             className={css(styles.inputGroupRow)}
                         >
                             <h3 className={css(styles.subTitle)}>Date To:</h3>
-                            <DatePicker
+                            <DatePickerComponent
                                 startOpen={false}
                                 name="date-to"
                                 selected={
@@ -287,19 +238,10 @@ function FiltersComponent({ filters = {}, onApply, onClose }) {
                                         : null
                                 }
                                 onChange={date => onValueChange('dateTo', date)}
-                                dateFormat="dd/MM/yyyy"
-                                customInput={
-                                    <input
-                                        type="text"
-                                        className={css(styles.inputField)}
-                                        value={
-                                            currentFilters.dateTo
-                                                ? new Date(
-                                                      currentFilters.dateTo
-                                                  )
-                                                : null
-                                        }
-                                    />
+                                value={
+                                    currentFilters.dateTo
+                                        ? new Date(currentFilters.dateTo)
+                                        : null
                                 }
                             />
                         </Column>
@@ -315,9 +257,7 @@ function FiltersComponent({ filters = {}, onApply, onClose }) {
                             <h3 className={css(styles.subTitle)}>
                                 Amount From:
                             </h3>
-                            <input
-                                type="text"
-                                className={css(styles.inputField)}
+                            <InputComponent
                                 value={currentFilters.amountFrom}
                                 onChange={e =>
                                     onValueChange('amountFrom', e.target.value)
@@ -329,9 +269,7 @@ function FiltersComponent({ filters = {}, onApply, onClose }) {
                             className={css(styles.inputGroupRow)}
                         >
                             <h3 className={css(styles.subTitle)}>Amount To:</h3>
-                            <input
-                                type="text"
-                                className={css(styles.inputField)}
+                            <InputComponent
                                 value={currentFilters.amountTo}
                                 onChange={e =>
                                     onValueChange('amountTo', e.target.value)

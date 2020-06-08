@@ -223,6 +223,7 @@ function DragNDropFileComponent({ files = [], onChange, hasFiles }) {
                 </Column>
             </Column>
             <LoadingComponent loading={loadingImages}>
+                {loadingImages && <div style={{ minHeight: 210 }}></div>}
                 <Gallery
                     photos={photos}
                     onClick={openLightbox}
