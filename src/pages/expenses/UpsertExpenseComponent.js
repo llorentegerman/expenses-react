@@ -8,6 +8,7 @@ import { useExpenses } from '../../logic/useExpenses';
 import firebaseClient from '../../logic/firebaseClient';
 import {
     AutosuggestCustom,
+    ButtonComponent,
     DatePickerComponent,
     ImageUploadComponent,
     InputComponent,
@@ -21,15 +22,6 @@ import {
 } from '../../logic/utilities';
 
 const styles = StyleSheet.create({
-    button: {
-        borderRadius: 5,
-        color: 'white',
-        cursor: 'pointer',
-        fontWeight: 600,
-        padding: '8px 10px',
-        width: 90,
-        textAlign: 'center'
-    },
     errorText: {
         color: 'red',
         width: '95%'
@@ -130,40 +122,20 @@ function AddExpenseComponent() {
                 const defaultCity = cities.find(
                     c => metadata.cities[c].default
                 );
-                cities.sort(
-                    (a, b) =>
-                        metadata.cities[a].position -
-                        metadata.cities[b].position
-                );
 
                 const categories = Object.keys(metadata.categories || {});
                 const defaultCategory = categories.find(
                     c => metadata.categories[c].default
-                );
-                categories.sort(
-                    (a, b) =>
-                        metadata.categories[a].position -
-                        metadata.categories[b].position
                 );
 
                 const currencies = Object.keys(metadata.currencies || {});
                 const defaultCurrency = currencies.find(
                     c => metadata.currencies[c].default
                 );
-                currencies.sort(
-                    (a, b) =>
-                        metadata.currencies[a].position -
-                        metadata.currencies[b].position
-                );
 
                 const methods = Object.keys(metadata.methods || {});
                 const defaultMethod = methods.find(
                     c => metadata.methods[c].default
-                );
-                methods.sort(
-                    (a, b) =>
-                        metadata.methods[a].position -
-                        metadata.methods[b].position
                 );
 
                 const newDefault = {
@@ -193,7 +165,6 @@ function AddExpenseComponent() {
     const categories = mapMetadataKeysToArray(metadata, 'categories');
     const currencies = mapMetadataKeysToArray(metadata, 'currencies');
     const methods = mapMetadataKeysToArray(metadata, 'methods');
-
     const { tags: tagsSuggestions } = extractTagsFromMetadata(metadata);
 
     if (!metadata) {
@@ -412,21 +383,16 @@ function AddExpenseComponent() {
                         style={{ marginTop: 20 }}
                         horizontal="spaced"
                     >
-                        <span
-                            className={css(styles.button)}
-                            style={{ backgroundColor: 'red' }}
+                        <ButtonComponent
+                            color="red"
+                            label="Cancel"
                             onClick={onClose}
-                        >
-                            Cancel
-                        </span>
-
-                        <span
-                            className={css(styles.button)}
-                            style={{ backgroundColor: 'green' }}
+                        />
+                        <ButtonComponent
+                            color="green"
+                            label="Add Expense"
                             onClick={handleSubmit(onSave)}
-                        >
-                            Save
-                        </span>
+                        />
                     </Row>
                 </Column>
             </Column>

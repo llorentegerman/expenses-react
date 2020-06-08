@@ -7,7 +7,11 @@ import Modal from 'react-modal';
 import { useSheetChangesSubscription } from '../../logic/useSheetChangesSubscription';
 import ExpenseItem from './ExpenseItem';
 import { applyFilters, numberFormat } from '../../logic/utilities';
-import { LoadingComponent, PaginationComponent } from '../../components';
+import {
+    ButtonComponent,
+    LoadingComponent,
+    PaginationComponent
+} from '../../components';
 import StatisticsWidget from './StatisticsWidget';
 import StatisticsByCategoryWidget from './StatisticsByCategoryWidget';
 import FiltersComponent from './FiltersComponent';
@@ -16,18 +20,6 @@ const styles = StyleSheet.create({
     buttonsContainer: {
         marginTop: 10,
         marginBottom: 10
-    },
-    addExpenseButton: {
-        backgroundColor: 'green',
-        borderRadius: 5,
-        color: 'white',
-        cursor: 'pointer',
-        fontWeight: 600,
-        padding: '8px 10px',
-        textAlign: 'center',
-        ':hover': {
-            backgroundColor: '#198c19'
-        }
     },
     link: {
         color: '#2c689c',
@@ -68,17 +60,7 @@ const styles = StyleSheet.create({
         }
     },
     showFiltersButton: {
-        backgroundColor: '#2c689c',
-        borderRadius: 5,
-        color: 'white',
-        cursor: 'pointer',
-        fontWeight: 600,
-        padding: '8px 10px',
-        textAlign: 'center',
         margin: '0px 8px',
-        ':hover': {
-            backgroundColor: '#2c689c'
-        },
         '@media (max-width: 768px)': {
             marginTop: 10,
             marginLeft: 0
@@ -165,12 +147,11 @@ function ExpensesComponent() {
                                 }
                             }}
                         >
-                            <span
-                                className={css(styles.addExpenseButton)}
+                            <ButtonComponent
+                                color="green"
+                                label="Add Expense"
                                 onClick={onAddSheetClick}
-                            >
-                                Add Expense
-                            </span>
+                            />
                             <Row
                                 breakpoints={{
                                     768: {
@@ -197,14 +178,14 @@ function ExpensesComponent() {
                                             clear filters
                                         </span>
                                     )}
-                                    <span
+                                    <ButtonComponent
                                         className={css(
                                             styles.showFiltersButton
                                         )}
+                                        color="blue"
+                                        label="Filters"
                                         onClick={() => setShowFilters(true)}
-                                    >
-                                        Filters
-                                    </span>
+                                    />
                                 </Row>
                                 <Row
                                     className={css(styles.statisticsGlobal)}

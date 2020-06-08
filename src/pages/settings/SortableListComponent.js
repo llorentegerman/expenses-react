@@ -8,23 +8,13 @@ import arrayMove from 'array-move';
 import { StyleSheet, css } from 'aphrodite';
 import { Column, Row } from 'simple-flexbox';
 import Switch from 'react-switch';
-import { ColorPickerComponent } from '../../components';
+import { ButtonComponent, ColorPickerComponent } from '../../components';
 import IconStar from '../../assets/icon-star';
 import IconStarFilled from '../../assets/icon-star-filled';
 import IconRemove from '../../assets/icon-remove';
 import IconEdit from '../../assets/icon-edit';
 
 const styles = StyleSheet.create({
-    button: {
-        borderRadius: 5,
-        color: 'white',
-        cursor: 'pointer',
-        fontWeight: 600,
-        padding: '8px 10px',
-        width: 90,
-        textAlign: 'center'
-    },
-    container: {},
     item: {
         borderRadius: 4,
         backgroundColor: '#FDFDFD',
@@ -160,7 +150,7 @@ const SortableItem = sortableElement(
 );
 
 const SortableContainer = sortableContainer(({ children }) => {
-    return <Column className={css(styles.container)}>{children}</Column>;
+    return <Column>{children}</Column>;
 });
 
 function SortableListComponent({
@@ -233,21 +223,12 @@ function SortableListComponent({
                 })}
             </SortableContainer>
             <Row flexGrow={1} style={{ marginTop: 20 }} horizontal="spaced">
-                <span
-                    className={css(styles.button)}
-                    style={{ backgroundColor: 'red' }}
-                    onClick={onClose}
-                >
-                    Cancel
-                </span>
-
-                <span
-                    className={css(styles.button)}
-                    style={{ backgroundColor: 'green' }}
+                <ButtonComponent color="red" label="Cancel" onClick={onClose} />
+                <ButtonComponent
+                    color="green"
+                    label="Save"
                     onClick={() => onSave(items)}
-                >
-                    Save
-                </span>
+                />
             </Row>
         </Column>
     );

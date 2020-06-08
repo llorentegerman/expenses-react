@@ -8,6 +8,7 @@ const styles = StyleSheet.create({
         padding: 0,
         margin: 0,
         marginTop: 4,
+        outline: 'none',
         width: 'calc(100% - 4px)'
     }
 });

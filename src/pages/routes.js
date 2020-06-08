@@ -1,5 +1,5 @@
 import React from 'react';
-import { Redirect, Route, Switch } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 import ExpensesComponent from './expenses/ExpensesComponent';
 import UpsertExpenseComponent from './expenses/UpsertExpenseComponent';
 import NewSheetComponent from './sheets/NewSheetComponent';
@@ -85,9 +85,9 @@ export default function RenterRoutes() {
                 path={`/settings`}
                 render={() => <UserSettingsComponent />}
             />
-            <Route exact path={`/newsheet`} component={NewSheetComponent} />
-            <Route exact path={`/dashboard`} component={DashboardComponent} />
-            <Redirect exact from={'/'} to={'/dashboard'} />
+            <Route exact path="/newsheet" component={NewSheetComponent} />
+            <Route exact path="/dashboard" component={DashboardComponent} />
+            <Route exact path="/" component={DashboardComponent} />
             <Route render={() => <span>Page not found</span>} />
         </Switch>
     );

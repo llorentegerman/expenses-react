@@ -5,6 +5,7 @@ import { useAsync } from 'react-async';
 import useReactRouter from 'use-react-router';
 import firebaseClient from '../../logic/firebaseClient';
 import {
+    ButtonComponent,
     DatePickerComponent,
     InputComponent,
     LoadingComponent,
@@ -13,15 +14,6 @@ import {
 import { extractTagsFromMetadata, mapArrayToTags } from '../../logic/utilities';
 
 const styles = StyleSheet.create({
-    button: {
-        borderRadius: 5,
-        color: 'white',
-        cursor: 'pointer',
-        fontWeight: 600,
-        padding: '8px 10px',
-        width: 90,
-        textAlign: 'center'
-    },
     closeButton: {
         border: '1px dashed',
         cursor: 'pointer',
@@ -280,21 +272,17 @@ function FiltersComponent({ filters = {}, onApply, onClose }) {
                 </Column>
 
                 <Row flexGrow={1} style={{ marginTop: 20 }} horizontal="spaced">
-                    <span
-                        className={css(styles.button)}
-                        style={{ backgroundColor: 'red' }}
+                    <ButtonComponent
+                        color="red"
+                        label="Cancel"
                         onClick={onClose}
-                    >
-                        Cancel
-                    </span>
+                    />
 
-                    <span
-                        className={css(styles.button)}
-                        style={{ backgroundColor: 'green' }}
+                    <ButtonComponent
+                        color="green"
+                        label="Apply Filters"
                         onClick={onApplyFilters}
-                    >
-                        Apply
-                    </span>
+                    />
                 </Row>
             </Column>
         </LoadingComponent>

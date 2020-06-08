@@ -1,4 +1,5 @@
 import AutosuggestCustom from './autosuggest';
+import ButtonComponent from './button';
 import ColorPickerComponent from './colorpicker';
 import DatePickerComponent from './datepicker';
 import HeaderComponent from './header';
@@ -12,6 +13,7 @@ import TagsComponent from './tags';
 
 export {
     AutosuggestCustom,
+    ButtonComponent,
     ColorPickerComponent,
     DatePickerComponent,
     HeaderComponent,
