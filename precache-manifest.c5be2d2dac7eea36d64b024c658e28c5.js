@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "8379629451a9f4903822d70d9f102bf0",
+    "revision": "b4d1dfa9742a7ee097f7459f4cef4df0",
     "url": "/expenses-react/index.html"
   },
   {
@@ -8,7 +8,7 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/expenses-react/static/css/2.0791fb6e.chunk.css"
   },
   {
-    "revision": "44fcb70710e65482b893",
+    "revision": "91b3d2f04da3a1b815fe",
     "url": "/expenses-react/static/css/main.52aca434.chunk.css"
   },
   {
@@ -16,8 +16,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/expenses-react/static/js/2.99595c00.chunk.js"
   },
   {
-    "revision": "44fcb70710e65482b893",
-    "url": "/expenses-react/static/js/main.7bd04ba7.chunk.js"
+    "revision": "91b3d2f04da3a1b815fe",
+    "url": "/expenses-react/static/js/main.cb267f4d.chunk.js"
   },
   {
     "revision": "e5000cf7710e7890a481",
