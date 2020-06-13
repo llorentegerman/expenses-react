@@ -47,7 +47,7 @@ const borderColors = [
     '#95BF8F'
 ];
 
-function StatisticsWidget({ index, statistics }) {
+function StatisticsWidget({ index, statistics, hideForecast }) {
     const [expanded, setExpanded] = useState(false);
 
     return (
@@ -66,16 +66,18 @@ function StatisticsWidget({ index, statistics }) {
             </span>
             <span>Total: ${numberFormat(statistics.total, 0)}</span>
             <span>Days: {statistics.days}</span>
-            <span>
-                Forecast: $
-                {numberFormat(
-                    Math.round(
-                        getDaysInPeriod(statistics.periodo) *
-                            (statistics.average || 0)
-                    ),
-                    0
-                )}
-            </span>
+            {!hideForecast && (
+                <span>
+                    Forecast: $
+                    {numberFormat(
+                        Math.round(
+                            getDaysInPeriod(statistics.periodo) *
+                                (statistics.average || 0)
+                        ),
+                        0
+                    )}
+                </span>
+            )}
 
             {statistics.categories && (
                 <React.Fragment>
@@ -84,7 +86,7 @@ function StatisticsWidget({ index, statistics }) {
                             className={css(styles.toggleButton)}
                             onClick={() => setExpanded(prevValue => !prevValue)}
                             style={{
-                                top: -95,
+                                top: hideForecast ? -80 : -95,
                                 right: 0,
                                 opacity: expanded ? 0 : 1
                             }}
@@ -95,7 +97,7 @@ function StatisticsWidget({ index, statistics }) {
                             className={css(styles.toggleButton)}
                             onClick={() => setExpanded(prevValue => !prevValue)}
                             style={{
-                                top: -95,
+                                top: hideForecast ? -80 : -95,
                                 right: 0,
                                 opacity: expanded ? 1 : 0
                             }}

@@ -225,6 +225,7 @@ function AddExpenseComponent() {
         >
             <Column style={{ padding: 25, marginTop: 5 }} horizontal="center">
                 <Column style={{ width: '100%', maxWidth: 500 }}>
+                    <h1>{editMode ? 'Edit Expense' : 'Add Expense'}</h1>
                     <DatePickerComponent
                         name="date"
                         selected={
@@ -390,7 +391,7 @@ function AddExpenseComponent() {
                         />
                         <ButtonComponent
                             color="green"
-                            label="Add Expense"
+                            label={editMode ? 'Save' : 'Add Expense'}
                             onClick={handleSubmit(onSave)}
                         />
                     </Row>

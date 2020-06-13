@@ -12,6 +12,12 @@ export const numberFormat = (value, decimals = 2) => {
 export const getDaysInPeriod = period =>
     moment(`${period}-01`, 'YYYY-MM-DD').daysInMonth();
 
+export const daysDiff = (from, to) => {
+    const a = moment(from).startOf('day');
+    const b = moment(to).startOf('day');
+    return a.diff(b, 'days') + 1;
+};
+
 export const isDateBetweenDates = (date, from, to) => {
     const value = moment(date);
     return (
@@ -75,6 +81,21 @@ export const extractTagsFromMetadata = metadata => {
     };
 };
 
+export const getPeriods = statistics => {
+    const periods = [];
+    if (statistics) {
+        Object.keys(statistics).forEach(p => {
+            if (typeof statistics[p] === 'object' && p !== 'categories') {
+                periods.push({
+                    ...statistics[p],
+                    periodo: p
+                });
+            }
+        });
+    }
+    return periods;
+};
+
 export const applyFilters = (
     expenses,
     {
@@ -109,4 +130,37 @@ export const applyFilters = (
             (!amountFrom || Number(amountFrom) <= expense.amount) &&
             (!amountTo || Number(amountTo) >= expense.amount)
     );
+};
+
+export const calculateStatistics = expenses => {
+    const totalDays = daysDiff(
+        expenses[0].date,
+        expenses[expenses.length - 1].date
+    );
+    let result = {
+        total: 0,
+        average: 0,
+        categories: {},
+        days: totalDays,
+        periodo: 'Filtered'
+    };
+    expenses.forEach(i => {
+        if (i.tags && i.tags.indexOf('noavg') >= 0) {
+            return;
+        }
+        result.total += Number(i.amount);
+        result.average = result.total / totalDays;
+        if (!result.categories[i.category]) {
+            result.categories[i.category] = {
+                total: 0,
+                average: 0
+            };
+        }
+
+        result.categories[i.category].total += Number(i.amount);
+        result.categories[i.category].average =
+            result.categories[i.category].total / totalDays;
+    });
+
+    return result;
 };

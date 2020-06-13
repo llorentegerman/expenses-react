@@ -6,7 +6,13 @@ import FlipMove from 'react-flip-move';
 import Modal from 'react-modal';
 import { useSheetChangesSubscription } from '../../logic/useSheetChangesSubscription';
 import ExpenseItem from './ExpenseItem';
-import { applyFilters, numberFormat } from '../../logic/utilities';
+import {
+    applyFilters,
+    calculateStatistics,
+    daysDiff,
+    getPeriods,
+    numberFormat
+} from '../../logic/utilities';
 import {
     ButtonComponent,
     LoadingComponent,
@@ -84,34 +90,31 @@ function ExpensesComponent() {
         setExpensesPaginated([...filtered].splice(0, 10));
     }, [expenses, currentFilters]);
 
+    useEffect(() => window.scrollTo(0, 0), []);
+
     const onAddSheetClick = () =>
         history.push(`/sheet/${match.params.sheetId}/new`);
 
     const onExpenseClick = expenseId =>
         history.push(`/sheet/${match.params.sheetId}/edit/${expenseId}`);
 
-    useEffect(() => window.scrollTo(0, 0), []);
-
     const handlePageClick = ({ selected }) => {
         setExpensesPaginated([...expensesFiltered].splice(selected * 10, 10));
     };
 
-    const periodos = [];
-    let totalDays = 0;
-    if (statistics) {
-        Object.keys(statistics).forEach(p => {
-            if (typeof statistics[p] === 'object' && p !== 'categories') {
-                periodos.push({
-                    ...statistics[p],
-                    periodo: p
-                });
-            }
-        });
+    const getAverageLabel = () => {
+        if (!statistics) {
+            return '';
+        }
+        const totalDays = daysDiff(statistics.lastUpdate, statistics.minDate);
 
-        var diffTime = Math.abs(statistics.lastUpdate - statistics.minDate);
-        totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-    }
+        return `Overall Average: $${numberFormat(
+            Math.round(statistics.average || 0),
+            0
+        )} / day. ${totalDays} days.`;
+    };
 
+    const periods = getPeriods(statistics);
     const hasFilters = Object.keys(currentFilters).length > 0;
     const pageCount = expensesFiltered.length / 10;
 
@@ -187,17 +190,14 @@ function ExpensesComponent() {
                                         onClick={() => setShowFilters(true)}
                                     />
                                 </Row>
-                                <Row
-                                    className={css(styles.statisticsGlobal)}
-                                    breakpoints={{ 768: { marginTop: 10 } }}
-                                >
-                                    Overall Average: $
-                                    {numberFormat(
-                                        Math.round(statistics.average || 0),
-                                        0
-                                    )}{' '}
-                                    / day. {totalDays} days.
-                                </Row>
+                                {!hasFilters && (
+                                    <Row
+                                        className={css(styles.statisticsGlobal)}
+                                        breakpoints={{ 768: { marginTop: 10 } }}
+                                    >
+                                        {getAverageLabel()}
+                                    </Row>
+                                )}
                             </Row>
                         </Row>
 
@@ -218,7 +218,16 @@ function ExpensesComponent() {
                         />
                     </Column>
                     <Column className={css(styles.sideColumnsRight)}>
-                        {periodos
+                        {hasFilters && (
+                            <StatisticsWidget
+                                hideForecast
+                                statistics={calculateStatistics(
+                                    expensesFiltered
+                                )}
+                                index={3}
+                            />
+                        )}
+                        {periods
                             .slice(0)
                             .reverse()
                             .map((p, index) => {

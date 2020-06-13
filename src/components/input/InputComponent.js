@@ -5,11 +5,12 @@ const styles = StyleSheet.create({
     inputField: {
         height: 40,
         fontSize: 16,
-        padding: 0,
+        padding: '1px 2px',
         margin: 0,
         marginTop: 4,
         outline: 'none',
-        width: 'calc(100% - 4px)'
+        width: '100%',
+        boxSizing: 'border-box'
     }
 });
 

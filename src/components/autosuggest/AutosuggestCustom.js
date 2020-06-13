@@ -10,7 +10,8 @@ const theme = {
         fontSize: 16,
         marginTop: 4,
         outline: 'none',
-        width: 'calc(100% - 8px)'
+        width: '100%',
+        boxSizing: 'border-box'
     },
     inputFocused: {
         outline: 'none'

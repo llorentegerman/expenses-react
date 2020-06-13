@@ -8,7 +8,8 @@ const styles = StyleSheet.create({
     reactTagsContainer: {
         ':nth-child(n) > div': {
             border: '1px solid rgb(118, 118, 118)',
-            width: 'calc(100% - 4px)'
+            width: '100%',
+            boxSizing: 'border-box'
         }
     }
 });
