@@ -1,4 +1,5 @@
 import React from 'react';
+import { bool, func, number, shape } from 'prop-types';
 import { StyleSheet, css } from 'aphrodite';
 import { Column, Row } from 'simple-flexbox';
 import { numberFormat } from '../../logic/utilities';
@@ -66,6 +67,13 @@ function StatisticsByCategoryWidget({ categories, showBorders, onClick }) {
     );
 }
 
-StatisticsByCategoryWidget.whyDidYouRender = false;
+StatisticsByCategoryWidget.propTypes = {
+    categories: shape({
+        average: number,
+        total: number
+    }),
+    showBorders: bool,
+    onClick: func
+};
 
 export default StatisticsByCategoryWidget;

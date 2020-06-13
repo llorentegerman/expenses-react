@@ -5,7 +5,6 @@ import { Column, Row } from 'simple-flexbox';
 import FlipMove from 'react-flip-move';
 import Modal from 'react-modal';
 import { useSheetChangesSubscription } from '../../logic/useSheetChangesSubscription';
-import ExpenseItem from './ExpenseItem';
 import {
     applyFilters,
     calculateStatistics,
@@ -16,10 +15,11 @@ import {
 import {
     ButtonComponent,
     LoadingComponent,
-    PaginationComponent
+    PaginationComponent,
+    StatisticsByCategoryWidget,
+    StatisticsWidget
 } from '../../components';
-import StatisticsWidget from './StatisticsWidget';
-import StatisticsByCategoryWidget from './StatisticsByCategoryWidget';
+import ExpenseItem from './ExpenseItem';
 import FiltersComponent from './FiltersComponent';
 
 const styles = StyleSheet.create({
@@ -125,29 +125,21 @@ function ExpensesComponent() {
                     style={{ width: '100%' }}
                     horizontal="spaced"
                     breakpoints={{
-                        1080: {
-                            flexDirection: 'column',
-                            alignItems: 'center'
-                        }
+                        1080: { flexDirection: 'column', alignItems: 'center' } // prettier-ignore
                     }}
                 >
                     <span className={css(styles.sideColumnsLeft)}></span>
 
                     <Column
                         style={{ maxWidth: 880, width: '100%' }}
-                        breakpoints={{
-                            1080: { padding: '0px 10px', maxWidth: 880 }
-                        }}
+                        breakpoints={{ 1080: { padding: '0px 10px', maxWidth: 880 } }} // prettier-ignore
                     >
                         <Row
                             className={css(styles.buttonsContainer)}
                             vertical="center"
                             horizontal="spaced"
                             breakpoints={{
-                                768: {
-                                    flexDirection: 'column',
-                                    alignItems: 'flex-start'
-                                }
+                                768: { flexDirection: 'column', alignItems: 'flex-start' } // prettier-ignore
                             }}
                         >
                             <ButtonComponent
@@ -157,26 +149,17 @@ function ExpensesComponent() {
                             />
                             <Row
                                 breakpoints={{
-                                    768: {
-                                        flexDirection: 'column',
-                                        alignItems: 'flex-start'
-                                    }
+                                    768: { flexDirection: 'column', alignItems: 'flex-start' } // prettier-ignore
                                 }}
                             >
                                 <Row
                                     vertical="end"
-                                    breakpoints={{
-                                        768: {
-                                            flexDirection: 'row-reverse'
-                                        }
-                                    }}
+                                    breakpoints={{ 768: { flexDirection: 'row-reverse' } }} // prettier-ignore
                                 >
                                     {hasFilters && (
                                         <span
                                             className={css(styles.link)}
-                                            onClick={() =>
-                                                setCurrentFilters({})
-                                            }
+                                            onClick={() => setCurrentFilters({})} // prettier-ignore
                                         >
                                             clear filters
                                         </span>

@@ -9,6 +9,7 @@ import { InitializingComponent, LoadingComponent } from './loading';
 import NotificationComponent from './notification';
 import PaginationComponent from './pagination';
 import SidebarComponent from './sidebar';
+import { StatisticsByCategoryWidget, StatisticsWidget } from './statistics';
 import TagsComponent from './tags';
 
 export {
@@ -24,5 +25,7 @@ export {
     NotificationComponent,
     PaginationComponent,
     SidebarComponent,
+    StatisticsByCategoryWidget,
+    StatisticsWidget,
     TagsComponent
 };
