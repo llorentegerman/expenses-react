@@ -9,7 +9,9 @@ const theme = {
         height: 40,
         fontSize: 16,
         marginTop: 4,
-        width: '99%'
+        outline: 'none',
+        width: '100%',
+        boxSizing: 'border-box'
     },
     inputFocused: {
         outline: 'none'

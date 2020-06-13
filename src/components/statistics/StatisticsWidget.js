@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
+import { bool, number, object, shape, string } from 'prop-types';
 import { StyleSheet, css } from 'aphrodite';
 import { Column } from 'simple-flexbox';
+import CollapsibleContent from 'react-collapsible-content';
 import { getDaysInPeriod, numberFormat } from '../../logic/utilities';
 import StatisticsByCategoryWidget from './StatisticsByCategoryWidget';
-import CollapsibleContent from 'react-collapsible-content';
 
 const styles = StyleSheet.create({
     statistics: {
@@ -30,6 +31,7 @@ const styles = StyleSheet.create({
         fontWeight: 600,
         position: 'absolute',
         transitionProperty: 'opacity',
+        transitionDuration: '.25s',
         transitionTimingFunction: 'ease-in-out'
     }
 });
@@ -47,13 +49,26 @@ const borderColors = [
     '#95BF8F'
 ];
 
-function StatisticsWidget({ index, statistics }) {
+function StatisticsWidget({ index, statistics, hideForecast }) {
     const [expanded, setExpanded] = useState(false);
+
+    const renderToggleButton = isExpand => (
+        <span
+            className={css(styles.toggleButton)}
+            onClick={() => setExpanded(prevValue => !prevValue)}
+            style={{
+                top: hideForecast ? -80 : -95,
+                right: 0,
+                opacity: isExpand ? (expanded ? 0 : 1) : expanded ? 1 : 0
+            }}
+        >
+            {isExpand ? '+' : '-'}
+        </span>
+    );
 
     return (
         <Column
             horizontal="start"
-            key={`statistics-${statistics.periodo}`}
             className={css(styles.statistics)}
             style={{
                 borderColor: borderColors[index % borderColors.length]
@@ -66,42 +81,24 @@ function StatisticsWidget({ index, statistics }) {
             </span>
             <span>Total: ${numberFormat(statistics.total, 0)}</span>
             <span>Days: {statistics.days}</span>
-            <span>
-                Forecast: $
-                {numberFormat(
-                    Math.round(
-                        getDaysInPeriod(statistics.periodo) *
-                            (statistics.average || 0)
-                    ),
-                    0
-                )}
-            </span>
+            {!hideForecast && (
+                <span>
+                    Forecast: $
+                    {numberFormat(
+                        Math.round(
+                            getDaysInPeriod(statistics.periodo) *
+                                (statistics.average || 0)
+                        ),
+                        0
+                    )}
+                </span>
+            )}
 
             {statistics.categories && (
                 <React.Fragment>
                     <div style={{ position: 'relative', width: '100%' }}>
-                        <span
-                            className={css(styles.toggleButton)}
-                            onClick={() => setExpanded(prevValue => !prevValue)}
-                            style={{
-                                top: -95,
-                                right: 0,
-                                opacity: expanded ? 0 : 1
-                            }}
-                        >
-                            +
-                        </span>
-                        <span
-                            className={css(styles.toggleButton)}
-                            onClick={() => setExpanded(prevValue => !prevValue)}
-                            style={{
-                                top: -95,
-                                right: 0,
-                                opacity: expanded ? 1 : 0
-                            }}
-                        >
-                            -
-                        </span>
+                        {renderToggleButton(true)}
+                        {renderToggleButton(false)}
                     </div>
                     <CollapsibleContent expanded={expanded}>
                         <div style={{ marginTop: 10 }}>
@@ -116,6 +113,16 @@ function StatisticsWidget({ index, statistics }) {
     );
 }
 
-StatisticsWidget.whyDidYouRender = false;
+StatisticsWidget.propTypes = {
+    index: number,
+    statistics: shape({
+        average: number,
+        categories: object,
+        days: number,
+        periodo: string,
+        total: number
+    }),
+    hideForecast: bool
+};
 
 export default StatisticsWidget;

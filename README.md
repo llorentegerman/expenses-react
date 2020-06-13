@@ -4,6 +4,9 @@ https://github.com/firebase/functions-samples/issues/395#issuecomment-605025572
 
 https://cloud.google.com/functions/docs/securing/managing-access-iam
 
+Select function from the list
+right column -> permissions -> Add member -> allUsers -> Role: invoker -> allow public access
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts

@@ -1,35 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, css } from 'aphrodite';
 import useReactRouter from 'use-react-router';
-import ReactPaginate from 'react-paginate';
 import { Column, Row } from 'simple-flexbox';
 import FlipMove from 'react-flip-move';
 import Modal from 'react-modal';
 import { useSheetChangesSubscription } from '../../logic/useSheetChangesSubscription';
+import {
+    applyFilters,
+    calculateStatistics,
+    daysDiff,
+    getPeriods,
+    numberFormat
+} from '../../logic/utilities';
+import {
+    ButtonComponent,
+    LoadingComponent,
+    PaginationComponent,
+    StatisticsByCategoryWidget,
+    StatisticsWidget
+} from '../../components';
 import ExpenseItem from './ExpenseItem';
-import { applyFilters, numberFormat } from '../../logic/utilities';
-import { LoadingComponent } from '../../commons/InitializingComponent';
-import StatisticsWidget from './StatisticsWidget';
-import StatisticsByCategoryWidget from './StatisticsByCategoryWidget';
 import FiltersComponent from './FiltersComponent';
-import '../../commons/styles/pagination.css';
 
 const styles = StyleSheet.create({
     buttonsContainer: {
         marginTop: 10,
         marginBottom: 10
-    },
-    addExpenseButton: {
-        backgroundColor: 'green',
-        borderRadius: 5,
-        color: 'white',
-        cursor: 'pointer',
-        fontWeight: 600,
-        padding: '8px 10px',
-        textAlign: 'center',
-        ':hover': {
-            backgroundColor: '#198c19'
-        }
     },
     link: {
         color: '#2c689c',
@@ -70,17 +66,7 @@ const styles = StyleSheet.create({
         }
     },
     showFiltersButton: {
-        backgroundColor: '#2c689c',
-        borderRadius: 5,
-        color: 'white',
-        cursor: 'pointer',
-        fontWeight: 600,
-        padding: '8px 10px',
-        textAlign: 'center',
         margin: '0px 8px',
-        ':hover': {
-            backgroundColor: '#2c689c'
-        },
         '@media (max-width: 768px)': {
             marginTop: 10,
             marginLeft: 0
@@ -104,37 +90,31 @@ function ExpensesComponent() {
         setExpensesPaginated([...filtered].splice(0, 10));
     }, [expenses, currentFilters]);
 
+    useEffect(() => window.scrollTo(0, 0), []);
+
     const onAddSheetClick = () =>
         history.push(`/sheet/${match.params.sheetId}/new`);
 
     const onExpenseClick = expenseId =>
         history.push(`/sheet/${match.params.sheetId}/edit/${expenseId}`);
 
-    useEffect(() => window.scrollTo(0, 0), []);
-
     const handlePageClick = ({ selected }) => {
         setExpensesPaginated([...expensesFiltered].splice(selected * 10, 10));
     };
 
-    const isMobile = () => window.innerWidth <= 1080;
-    const isXS = () => window.innerWidth <= 468;
+    const getAverageLabel = () => {
+        if (!statistics) {
+            return '';
+        }
+        const totalDays = daysDiff(statistics.lastUpdate, statistics.minDate);
 
-    const periodos = [];
-    let totalDays = 0;
-    if (statistics) {
-        Object.keys(statistics).forEach(p => {
-            if (typeof statistics[p] === 'object' && p !== 'categories') {
-                periodos.push({
-                    ...statistics[p],
-                    periodo: p
-                });
-            }
-        });
+        return `Overall Average: $${numberFormat(
+            Math.round(statistics.average || 0),
+            0
+        )} / day. ${totalDays} days.`;
+    };
 
-        var diffTime = Math.abs(statistics.lastUpdate - statistics.minDate);
-        totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-    }
-
+    const periods = getPeriods(statistics);
     const hasFilters = Object.keys(currentFilters).length > 0;
     const pageCount = expensesFiltered.length / 10;
 
@@ -145,83 +125,62 @@ function ExpensesComponent() {
                     style={{ width: '100%' }}
                     horizontal="spaced"
                     breakpoints={{
-                        1080: {
-                            flexDirection: 'column',
-                            alignItems: 'center'
-                        }
+                        1080: { flexDirection: 'column', alignItems: 'center' } // prettier-ignore
                     }}
                 >
                     <span className={css(styles.sideColumnsLeft)}></span>
 
                     <Column
                         style={{ maxWidth: 880, width: '100%' }}
-                        breakpoints={{
-                            1080: { padding: '0px 10px', maxWidth: 880 }
-                        }}
+                        breakpoints={{ 1080: { padding: '0px 10px', maxWidth: 880 } }} // prettier-ignore
                     >
                         <Row
                             className={css(styles.buttonsContainer)}
                             vertical="center"
                             horizontal="spaced"
                             breakpoints={{
-                                768: {
-                                    flexDirection: 'column',
-                                    alignItems: 'flex-start'
-                                }
+                                768: { flexDirection: 'column', alignItems: 'flex-start' } // prettier-ignore
                             }}
                         >
-                            <span
-                                className={css(styles.addExpenseButton)}
+                            <ButtonComponent
+                                color="green"
+                                label="Add Expense"
                                 onClick={onAddSheetClick}
-                            >
-                                Add Expense
-                            </span>
+                            />
                             <Row
                                 breakpoints={{
-                                    768: {
-                                        flexDirection: 'column',
-                                        alignItems: 'flex-start'
-                                    }
+                                    768: { flexDirection: 'column', alignItems: 'flex-start' } // prettier-ignore
                                 }}
                             >
                                 <Row
                                     vertical="end"
-                                    breakpoints={{
-                                        768: {
-                                            flexDirection: 'row-reverse'
-                                        }
-                                    }}
+                                    breakpoints={{ 768: { flexDirection: 'row-reverse' } }} // prettier-ignore
                                 >
                                     {hasFilters && (
                                         <span
                                             className={css(styles.link)}
-                                            onClick={() =>
-                                                setCurrentFilters({})
-                                            }
+                                            onClick={() => setCurrentFilters({})} // prettier-ignore
                                         >
                                             clear filters
                                         </span>
                                     )}
-                                    <span
+                                    <ButtonComponent
                                         className={css(
                                             styles.showFiltersButton
                                         )}
+                                        color="blue"
+                                        label="Filters"
                                         onClick={() => setShowFilters(true)}
+                                    />
+                                </Row>
+                                {!hasFilters && (
+                                    <Row
+                                        className={css(styles.statisticsGlobal)}
+                                        breakpoints={{ 768: { marginTop: 10 } }}
                                     >
-                                        Filters
-                                    </span>
-                                </Row>
-                                <Row
-                                    className={css(styles.statisticsGlobal)}
-                                    breakpoints={{ 768: { marginTop: 10 } }}
-                                >
-                                    Overall Average: $
-                                    {numberFormat(
-                                        Math.round(statistics.average || 0),
-                                        0
-                                    )}{' '}
-                                    / day. {totalDays} days.
-                                </Row>
+                                        {getAverageLabel()}
+                                    </Row>
+                                )}
                             </Row>
                         </Row>
 
@@ -236,26 +195,22 @@ function ExpensesComponent() {
                             ))}
                         </FlipMove>
 
-                        {pageCount > 0 && (
-                            <ReactPaginate
-                                previousLabel={'<'}
-                                nextLabel={'>'}
-                                breakLabel={'...'}
-                                breakClassName={'break-me'}
-                                pageCount={pageCount}
-                                marginPagesDisplayed={isXS() ? 1 : 2}
-                                pageRangeDisplayed={
-                                    isXS() ? 1 : isMobile() ? 2 : 5
-                                }
-                                onPageChange={handlePageClick}
-                                containerClassName={'pagination'}
-                                subContainerClassName={'pages pagination'}
-                                activeClassName={'active'}
-                            />
-                        )}
+                        <PaginationComponent
+                            pageCount={pageCount}
+                            onPageChange={handlePageClick}
+                        />
                     </Column>
                     <Column className={css(styles.sideColumnsRight)}>
-                        {periodos
+                        {hasFilters && (
+                            <StatisticsWidget
+                                hideForecast
+                                statistics={calculateStatistics(
+                                    expensesFiltered
+                                )}
+                                index={3}
+                            />
+                        )}
+                        {periods
                             .slice(0)
                             .reverse()
                             .map((p, index) => {

@@ -4,10 +4,12 @@ import { StyleSheet, css } from 'aphrodite';
 import { Route, Switch } from 'react-router-dom';
 import useReactRouter from 'use-react-router';
 import { useExpenses } from '../logic/useExpenses';
-import SidebarComponent from '../commons/sidebar/SidebarComponent';
-import HeaderComponent from '../commons/header/HeaderComponent';
-import InitializingComponent from '../commons/InitializingComponent';
-import NotificationComponent from '../commons/NotificationComponent';
+import {
+    HeaderComponent,
+    InitializingComponent,
+    NotificationComponent,
+    SidebarComponent
+} from '../components';
 import LoginComponent from './auth/LoginComponent';
 import Routes from './routes';
 

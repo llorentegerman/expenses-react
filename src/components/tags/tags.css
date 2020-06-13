@@ -6,7 +6,7 @@
     border: 1px solid #D1D1D1;
     padding: 1px;
     cursor: text;
-    background-color: "white";
+    background-color: white;
     width: 100%;
   }
   
@@ -64,7 +64,8 @@
   .react-tags__search-input {
     height: 38px;
     max-width: 100%;
-    width: calc(100% - 4px) !important;
+    width: 100%;
+    box-sizing: border-box;
   
     /* remove styles and layout from this element */
     margin: 0;

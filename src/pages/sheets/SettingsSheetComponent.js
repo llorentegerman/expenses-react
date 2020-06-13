@@ -6,17 +6,20 @@ import useForm from 'react-hook-form';
 import { Column, Row } from 'simple-flexbox';
 import { useExpenses } from '../../logic/useExpenses';
 import firebaseClient from '../../logic/firebaseClient';
-import { LoadingComponent } from '../../commons/InitializingComponent';
+import {
+    ButtonComponent,
+    InputComponent,
+    LoadingComponent
+} from '../../components';
 
 const styles = StyleSheet.create({
-    button: {
-        borderRadius: 5,
-        color: 'white',
-        cursor: 'pointer',
-        fontWeight: 600,
-        padding: '8px 10px',
-        width: 90,
-        textAlign: 'center'
+    container: {
+        margin: '0 auto',
+        maxWidth: 500
+    },
+    errorText: {
+        color: 'red',
+        width: '95%'
     },
     label: {
         fontWeight: 500,
@@ -25,13 +28,8 @@ const styles = StyleSheet.create({
     title: {
         lineHeight: '36px',
         fontSize: 24,
-        fontWeight: 'bold'
-    },
-    subtitle: {
-        lineHeight: '27px',
-        fontSize: 18,
-        marginTop: 4,
-        marginBottom: 8
+        fontWeight: 'bold',
+        marginBottom: 10
     }
 });
 
@@ -77,42 +75,34 @@ function SettingsComponent() {
     const renderError = fieldName =>
         errors[fieldName] && (
             <span className={css(styles.errorText)}>
-                {errors[fieldName].message || 'Campo requerido'}
+                {errors[fieldName].message || 'Required field'}
             </span>
         );
 
     return (
         <LoadingComponent loading={loadingSheetName || loading} fullScreen>
-            <Column>
+            <Column className={css(styles.container)}>
                 <span className={css(styles.title)}>Settings</span>
 
-                <Column>
-                    <Row style={{ marginTop: 12 }}>
-                        <span className={css(styles.label)}>Name</span>
-                        <input
-                            name="name"
-                            ref={register({ required: true })}
-                            type="text"
-                        />
-                    </Row>
-                    {renderError('date')}
-                </Column>
-                <Row flexGrow={1} style={{ marginTop: 20 }} horizontal="spaced">
-                    <span
-                        className={css(styles.button)}
-                        style={{ backgroundColor: 'red' }}
-                        onClick={onClose}
-                    >
-                        Cancel
-                    </span>
+                <span className={css(styles.label)}>Name</span>
+                <InputComponent
+                    name="name"
+                    placeholder="SHEET NAME"
+                    ref={register({ required: true })}
+                />
+                {renderError('name')}
 
-                    <span
-                        className={css(styles.button)}
-                        style={{ backgroundColor: 'green' }}
+                <Row flexGrow={1} style={{ marginTop: 20 }} horizontal="spaced">
+                    <ButtonComponent
+                        color="red"
+                        label="Cancel"
+                        onClick={onClose}
+                    />
+                    <ButtonComponent
+                        color="green"
+                        label="Save"
                         onClick={handleSubmit(onSave)}
-                    >
-                        Save
-                    </span>
+                    />
                 </Row>
             </Column>
         </LoadingComponent>

@@ -297,14 +297,14 @@ const upsertExpense = async ({
                 name: files[i].name || ''
             });
             if (files[i].rotate) {
-                await _rotateImage(files[i].url, files[i].rotate);
+                _rotateImage(files[i].url, files[i].rotate);
             }
             continue;
         }
         const extension = files[i].name.split('.').pop();
         const filePath = `${sheetId}/${newId}/${new Date().getTime()}.${extension}`;
         try {
-            var fileRef = storageRef.child(filePath);
+            const fileRef = storageRef.child(filePath);
             await fileRef.put(files[i]);
             newExpense.files.push({
                 url: filePath,

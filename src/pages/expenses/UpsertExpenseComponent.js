@@ -1,45 +1,30 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, css } from 'aphrodite';
 import useReactRouter from 'use-react-router';
 import { Column, Row } from 'simple-flexbox';
 import useForm from 'react-hook-form';
 import { useAsync } from 'react-async';
-import DatePicker from 'react-datepicker';
-import ReactTags from 'react-tag-autocomplete';
-import 'react-datepicker/dist/react-datepicker.css';
 import { useExpenses } from '../../logic/useExpenses';
 import firebaseClient from '../../logic/firebaseClient';
-import { LoadingComponent } from '../../commons/InitializingComponent';
-import ImageUploadComponent from '../../commons/ImageUpload';
-import AutosuggestCustom from '../../commons/AutosuggestCustom';
-import { isFileAnImage } from '../../logic/utilities';
-import '../../commons/styles/tags.css';
+import {
+    AutosuggestCustom,
+    ButtonComponent,
+    DatePickerComponent,
+    ImageUploadComponent,
+    InputComponent,
+    LoadingComponent,
+    TagsComponent
+} from '../../components';
+import {
+    extractTagsFromMetadata,
+    isFileAnImage,
+    mapMetadataKeysToArray
+} from '../../logic/utilities';
 
 const styles = StyleSheet.create({
-    button: {
-        borderRadius: 5,
-        color: 'white',
-        cursor: 'pointer',
-        fontWeight: 600,
-        padding: '8px 10px',
-        width: 90,
-        textAlign: 'center'
-    },
     errorText: {
         color: 'red',
         width: '95%'
-    },
-    inputField: {
-        height: 40,
-        fontSize: 16,
-        marginTop: 4,
-        width: '99%',
-        maxWidth: 500
-    },
-    reactTagsContainer: {
-        ':nth-child(n) > div': {
-            width: '99%'
-        }
     }
 });
 
@@ -68,6 +53,8 @@ function AddExpenseComponent() {
 
     const [files, setFiles] = useState([]);
     const [filesChanged, setFilesChanged] = useState(0);
+
+    useEffect(() => window.scrollTo(0, 0), []);
 
     useEffect(() => {
         const loadFiles = async filteredExpense => {
@@ -135,40 +122,20 @@ function AddExpenseComponent() {
                 const defaultCity = cities.find(
                     c => metadata.cities[c].default
                 );
-                cities.sort(
-                    (a, b) =>
-                        metadata.cities[a].position -
-                        metadata.cities[b].position
-                );
 
                 const categories = Object.keys(metadata.categories || {});
                 const defaultCategory = categories.find(
                     c => metadata.categories[c].default
-                );
-                categories.sort(
-                    (a, b) =>
-                        metadata.categories[a].position -
-                        metadata.categories[b].position
                 );
 
                 const currencies = Object.keys(metadata.currencies || {});
                 const defaultCurrency = currencies.find(
                     c => metadata.currencies[c].default
                 );
-                currencies.sort(
-                    (a, b) =>
-                        metadata.currencies[a].position -
-                        metadata.currencies[b].position
-                );
 
                 const methods = Object.keys(metadata.methods || {});
                 const defaultMethod = methods.find(
                     c => metadata.methods[c].default
-                );
-                methods.sort(
-                    (a, b) =>
-                        metadata.methods[a].position -
-                        metadata.methods[b].position
                 );
 
                 const newDefault = {
@@ -194,57 +161,11 @@ function AddExpenseComponent() {
         reset
     ]);
 
-    const cities = useMemo(() => {
-        if (metadata && metadata.cities) {
-            return Object.keys(metadata.cities);
-        }
-        return [];
-    }, [metadata]);
-
-    const categories = useMemo(() => {
-        if (metadata && metadata.categories) {
-            const categories = Object.keys(metadata.categories || {});
-            categories.sort(
-                (a, b) =>
-                    metadata.categories[a].position -
-                    metadata.categories[b].position
-            );
-            return categories;
-        }
-        return [];
-    }, [metadata]);
-
-    const currencies = useMemo(() => {
-        if (metadata && metadata.currencies) {
-            const currencies = Object.keys(metadata.currencies || {});
-            currencies.sort(
-                (a, b) =>
-                    metadata.currencies[a].position -
-                    metadata.currencies[b].position
-            );
-            return currencies;
-        }
-        return [];
-    }, [metadata]);
-
-    const methods = useMemo(() => {
-        if (metadata && metadata.methods) {
-            const methods = Object.keys(metadata.methods || {});
-            methods.sort(
-                (a, b) =>
-                    metadata.methods[a].position - metadata.methods[b].position
-            );
-            return methods;
-        }
-        return [];
-    }, [metadata]);
-
-    const tagsSuggestions = useMemo(() => {
-        if (metadata && metadata.tags) {
-            return Object.keys(metadata.tags).map(t => ({ id: t, name: t }));
-        }
-        return [];
-    }, [metadata]);
+    const cities = mapMetadataKeysToArray(metadata, 'cities');
+    const categories = mapMetadataKeysToArray(metadata, 'categories');
+    const currencies = mapMetadataKeysToArray(metadata, 'currencies');
+    const methods = mapMetadataKeysToArray(metadata, 'methods');
+    const { tags: tagsSuggestions } = extractTagsFromMetadata(metadata);
 
     if (!metadata) {
         return (
@@ -304,7 +225,8 @@ function AddExpenseComponent() {
         >
             <Column style={{ padding: 25, marginTop: 5 }} horizontal="center">
                 <Column style={{ width: '100%', maxWidth: 500 }}>
-                    <DatePicker
+                    <h1>{editMode ? 'Edit Expense' : 'Add Expense'}</h1>
+                    <DatePickerComponent
                         name="date"
                         selected={
                             watch('date')
@@ -314,14 +236,7 @@ function AddExpenseComponent() {
                                 : new Date()
                         }
                         onChange={date => setValue('date', date)}
-                        dateFormat="dd/MM/yyyy"
-                        customInput={
-                            <input
-                                type="text"
-                                className={css(styles.inputField)}
-                                value={watch('date')}
-                            />
-                        }
+                        value={watch('date')}
                     />
                     <input
                         name="date"
@@ -363,49 +278,42 @@ function AddExpenseComponent() {
                     />
                     {renderError('category')}
 
-                    <input
-                        type="text"
+                    <InputComponent
                         name="description"
                         placeholder="DESCRIPTION"
                         onChange={e => setValue('description', e.target.value)}
                         ref={register({ required: true })}
-                        className={css(styles.inputField)}
                         autoComplete="off"
                     />
                     {renderError('description')}
 
-                    <Column className={css(styles.reactTagsContainer)}>
-                        <ReactTags
-                            tags={tagsValues}
-                            suggestions={tagsSuggestions}
-                            onDelete={i => {
-                                const newTags = tagsValues.slice(0);
-                                newTags.splice(i, 1);
-                                setValue(
-                                    'tags',
-                                    newTags.map(e => e.name).join(',')
-                                );
-                            }}
-                            onAddition={tag => {
-                                const newTags = tagsValues.slice(0);
-                                if (newTags.find(i => i.name === tag.name)) {
-                                    return;
-                                }
-                                newTags.push(tag);
-                                setValue(
-                                    'tags',
-                                    newTags.map(e => e.name).join(',')
-                                );
-                            }}
-                            minQueryLength={0}
-                            allowNew
-                            style={{ marginTop: 20 }}
-                        />
-                    </Column>
+                    <TagsComponent
+                        onAddition={tag => {
+                            const newTags = tagsValues.slice(0);
+                            if (newTags.find(i => i.name === tag.name)) {
+                                return;
+                            }
+                            newTags.push(tag);
+                            setValue(
+                                'tags',
+                                newTags.map(e => e.name).join(',')
+                            );
+                        }}
+                        onDelete={i => {
+                            const newTags = tagsValues.slice(0);
+                            newTags.splice(i, 1);
+                            setValue(
+                                'tags',
+                                newTags.map(e => e.name).join(',')
+                            );
+                        }}
+                        suggestions={tagsSuggestions}
+                        tags={tagsValues}
+                    />
                     <input name="tags" ref={register({})} type="hidden" />
                     {renderError('tags')}
 
-                    <input
+                    <InputComponent
                         type="number"
                         name="amount"
                         placeholder="AMOUNT"
@@ -416,7 +324,6 @@ function AddExpenseComponent() {
                                 !isNaN(Number(value)) ||
                                 'Debe ingresar un numero'
                         })}
-                        className={css(styles.inputField)}
                         autoComplete="off"
                     />
                     {renderError('amount')}
@@ -477,21 +384,16 @@ function AddExpenseComponent() {
                         style={{ marginTop: 20 }}
                         horizontal="spaced"
                     >
-                        <span
-                            className={css(styles.button)}
-                            style={{ backgroundColor: 'red' }}
+                        <ButtonComponent
+                            color="red"
+                            label="Cancel"
                             onClick={onClose}
-                        >
-                            Cancel
-                        </span>
-
-                        <span
-                            className={css(styles.button)}
-                            style={{ backgroundColor: 'green' }}
+                        />
+                        <ButtonComponent
+                            color="green"
+                            label={editMode ? 'Save' : 'Add Expense'}
                             onClick={handleSubmit(onSave)}
-                        >
-                            Save
-                        </span>
+                        />
                     </Row>
                 </Column>
             </Column>

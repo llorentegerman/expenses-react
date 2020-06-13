@@ -6,25 +6,30 @@ import useForm from 'react-hook-form';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useExpenses } from '../../logic/useExpenses';
 import firebaseClient from '../../logic/firebaseClient';
-import { LoadingComponent } from '../../commons/InitializingComponent';
+import {
+    ButtonComponent,
+    InputComponent,
+    LoadingComponent
+} from '../../components';
 
 const styles = StyleSheet.create({
-    button: {
-        borderRadius: 5,
-        color: 'white',
-        cursor: 'pointer',
-        fontWeight: 600,
-        padding: '8px 10px',
-        width: 90,
-        textAlign: 'center'
+    container: {
+        margin: '0 auto',
+        maxWidth: 500
     },
     errorText: {
         color: 'red',
         width: '95%'
     },
-    inputField: {
-        width: '100%',
-        marginTop: 4
+    label: {
+        fontWeight: 500,
+        marginRight: 6
+    },
+    title: {
+        lineHeight: '36px',
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 10
     }
 });
 
@@ -44,51 +49,40 @@ function AddExpenseComponent() {
         history.push(`/sheet/${sheetId}`);
     };
 
-    const onClose = () => history.push(`/`);
+    const onClose = () => history.push('/');
 
     const renderError = fieldName =>
         errors[fieldName] && (
             <span className={css(styles.errorText)}>
-                {errors[fieldName].message || 'Campo requerido'}
+                {errors[fieldName].message || 'Required field'}
             </span>
         );
 
     return (
         <LoadingComponent loading={loading} fullScreen>
-            <Column style={{ padding: 25, marginTop: 5 }} horizontal="center">
-                <Column style={{ width: '100%', maxWidth: 500 }}>
-                    <input
-                        type="text"
-                        name="name"
-                        placeholder="NOMBRE"
-                        onChange={e => setValue('name', e.target.value)}
-                        ref={register({ required: true })}
-                        className={css(styles.inputField)}
+            <Column className={css(styles.container)}>
+                <span className={css(styles.title)}>Create New Sheet</span>
+                <span className={css(styles.label)}>Name</span>
+                <InputComponent
+                    name="name"
+                    placeholder="SHEET NAME"
+                    onChange={e => setValue('name', e.target.value)}
+                    ref={register({ required: true })}
+                />
+                {renderError('name')}
+
+                <Row flexGrow={1} style={{ marginTop: 20 }} horizontal="spaced">
+                    <ButtonComponent
+                        color="red"
+                        label="Cancel"
+                        onClick={onClose}
                     />
-                    {renderError('name')}
-
-                    <Row
-                        flexGrow={1}
-                        style={{ marginTop: 20 }}
-                        horizontal="spaced"
-                    >
-                        <span
-                            className={css(styles.button)}
-                            style={{ backgroundColor: 'red' }}
-                            onClick={onClose}
-                        >
-                            Cancel
-                        </span>
-
-                        <span
-                            className={css(styles.button)}
-                            style={{ backgroundColor: 'green' }}
-                            onClick={handleSubmit(onSave)}
-                        >
-                            Save
-                        </span>
-                    </Row>
-                </Column>
+                    <ButtonComponent
+                        color="green"
+                        label="Save"
+                        onClick={handleSubmit(onSave)}
+                    />
+                </Row>
             </Column>
         </LoadingComponent>
     );
