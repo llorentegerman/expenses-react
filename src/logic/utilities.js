@@ -133,10 +133,10 @@ export const applyFilters = (
 };
 
 export const calculateStatistics = expenses => {
-    const totalDays = daysDiff(
-        expenses[0].date,
-        expenses[expenses.length - 1].date
-    );
+    const totalDays =
+        expenses && expenses.length
+            ? daysDiff(expenses[0].date, expenses[expenses.length - 1].date)
+            : 0;
     let result = {
         total: 0,
         average: 0,
