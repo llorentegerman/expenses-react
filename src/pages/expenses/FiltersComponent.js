@@ -107,40 +107,6 @@ function FiltersComponent({ filters = {}, onApply, onClose }) {
             return newFilters;
         });
 
-    const onTagAdd = (type, tag) =>
-        setCurrentFilters(prev => {
-            const array = [...prev[type]];
-            if (array.find(i => i.id === tag.id)) {
-                return prev;
-            }
-            array.push(tag);
-            const newFilters = { ...prev };
-            newFilters[type] = array;
-            return newFilters;
-        });
-
-    const onTagDelete = (type, index) =>
-        setCurrentFilters(prev => {
-            const array = [...prev[type]];
-            array.splice(index, 1);
-            const newFilters = { ...prev };
-            newFilters[type] = array;
-            return newFilters;
-        });
-
-    const renderTagFilter = ({ title, type, suggestions, noStyles }) => (
-        <Column flexGrow={1} className={!noStyles && css(styles.inputGroupRow)}>
-            <h3 className={css(styles.subTitle)}>{title}:</h3>
-            <TagsComponent
-                onAddition={tag => onTagAdd(type, tag)}
-                onDelete={index => onTagDelete(type, index)}
-                suggestions={suggestions}
-                placeholder={`Select ${title}`}
-                tags={currentFilters[type]}
-            />
-        </Column>
-    );
-
     return (
         <LoadingComponent loading={loading} fullScreen>
             <Column className={css(styles.container)}>
@@ -157,38 +123,48 @@ function FiltersComponent({ filters = {}, onApply, onClose }) {
                 </Row>
 
                 <Row>
-                    {renderTagFilter({
-                        title: 'Categories',
-                        type: 'categories',
-                        suggestions: categories,
-                        noStyles: true
-                    })}
+                    <TagFilter
+                        title="Categories"
+                        type="categories"
+                        suggestions={categories}
+                        noStyles={true}
+                        setCurrentFilters={setCurrentFilters}
+                        currentFilters={currentFilters}
+                    />
                 </Row>
 
                 <Row>
-                    {renderTagFilter({
-                        title: 'Cities',
-                        type: 'cities',
-                        suggestions: cities
-                    })}
-                    {renderTagFilter({
-                        title: 'Currencies',
-                        type: 'currencies',
-                        suggestions: currencies
-                    })}
+                    <TagFilter
+                        title="Cities"
+                        type="cities"
+                        suggestions={cities}
+                        setCurrentFilters={setCurrentFilters}
+                        currentFilters={currentFilters}
+                    />
+                    <TagFilter
+                        title="Currencies"
+                        type="currencies"
+                        suggestions={currencies}
+                        setCurrentFilters={setCurrentFilters}
+                        currentFilters={currentFilters}
+                    />
                 </Row>
                 <Row>
-                    {renderTagFilter({
-                        title: 'Methods',
-                        type: 'methods',
-                        suggestions: methods
-                    })}
+                    <TagFilter
+                        title="Methods"
+                        type="methods"
+                        suggestions={methods}
+                        setCurrentFilters={setCurrentFilters}
+                        currentFilters={currentFilters}
+                    />
 
-                    {renderTagFilter({
-                        title: 'Tags',
-                        type: 'tags',
-                        suggestions: tags
-                    })}
+                    <TagFilter
+                        title="Tags"
+                        type="tags"
+                        suggestions={tags}
+                        setCurrentFilters={setCurrentFilters}
+                        currentFilters={currentFilters}
+                    />
                 </Row>
 
                 <Column>
@@ -286,6 +262,49 @@ function FiltersComponent({ filters = {}, onApply, onClose }) {
                 </Row>
             </Column>
         </LoadingComponent>
+    );
+}
+
+function TagFilter({
+    title,
+    type,
+    suggestions,
+    noStyles,
+    setCurrentFilters,
+    currentFilters
+}) {
+    const onTagAdd = (type, tag) =>
+        setCurrentFilters(prev => {
+            const array = [...prev[type]];
+            if (array.find(i => i.id === tag.id)) {
+                return prev;
+            }
+            array.push(tag);
+            const newFilters = { ...prev };
+            newFilters[type] = array;
+            return newFilters;
+        });
+
+    const onTagDelete = (type, index) =>
+        setCurrentFilters(prev => {
+            const array = [...prev[type]];
+            array.splice(index, 1);
+            const newFilters = { ...prev };
+            newFilters[type] = array;
+            return newFilters;
+        });
+
+    return (
+        <Column flexGrow={1} className={!noStyles && css(styles.inputGroupRow)}>
+            <h3 className={css(styles.subTitle)}>{title}:</h3>
+            <TagsComponent
+                onAddition={tag => onTagAdd(type, tag)}
+                onDelete={index => onTagDelete(type, index)}
+                suggestions={suggestions}
+                placeholder={`Select ${title}`}
+                tags={currentFilters[type]}
+            />
+        </Column>
     );
 }
 
