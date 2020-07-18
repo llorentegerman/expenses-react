@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import firebaseClient from './firebaseClient';
 
 export default () => {
@@ -6,6 +6,7 @@ export default () => {
     const [user, setUser] = useState(null);
     const [googleProvider, setGoogleProvider] = useState(null);
     const [initializing, setInitializing] = useState(true);
+    const isOnlineRef = useRef(null);
 
     useEffect(() => {
         const { googleProvider } = firebaseClient.init();
@@ -14,8 +15,21 @@ export default () => {
         connectedRef.on('value', snap => {
             if (snap.val() === true) {
                 setIsOnline(true);
+                isOnlineRef.current = true;
+                localStorage.setItem('isOnline', 'true');
             } else {
                 setIsOnline(false);
+                isOnlineRef.current = false;
+                localStorage.setItem('isOnline', 'false');
+                setTimeout(() => {
+                    if (!isOnlineRef.current) {
+                        const lsUser = localStorage.getItem('user');
+                        if (lsUser) {
+                            setUser(JSON.parse(lsUser));
+                        }
+                        setInitializing(false);
+                    }
+                }, 3000);
             }
         });
     }, []);
@@ -30,6 +44,7 @@ export default () => {
                 newUser = refreshResponse.user;
             }
             setUser(newUser);
+            localStorage.setItem('user', JSON.stringify(newUser));
             setInitializing(false);
         };
         const listener = firebaseClient.onAuthStateChanged({ callback });
@@ -45,6 +60,7 @@ export default () => {
         }
         const refreshResponse = await firebaseClient.refreshUser(user.uid);
         setUser(refreshResponse.user);
+        localStorage.setItem('user', JSON.stringify(refreshResponse.user));
     };
 
     const login = async () =>

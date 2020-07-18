@@ -17,6 +17,8 @@ const _rotateImage = async (path, angle) => {
     return addMessage({ path, angle });
 };
 
+const _isOnline = () => localStorage.getItem('isOnline') === 'true';
+
 const _config = {
     apiKey: process.env.REACT_APP_apiKey,
     authDomain: process.env.REACT_APP_authDomain,
@@ -89,8 +91,20 @@ const getExpenses = async ({ sheetId }) => {
     return expenses;
 };
 
-const getExpenseById = ({ sheetId, expenseId }) =>
-    _fetchData(`/sheets/${sheetId}/expenses/${expenseId}`);
+const getExpenseById = ({ sheetId, expenseId }) => {
+    if (!_isOnline()) {
+        const sheet = JSON.parse(
+            localStorage.getItem(`sheet/${sheetId}`) || '{}'
+        );
+        if (!sheet || !sheet.expenses || sheet.expenses.length === 0) {
+            return {};
+        }
+
+        const expense = sheet.expenses.find(e => e.id === expenseId);
+        return Promise.resolve(expense || {});
+    }
+    return _fetchData(`/sheets/${sheetId}/expenses/${expenseId}`);
+};
 
 const getExpensesRef = ({ sheetId }) => getRef(`/sheets/${sheetId}/expenses`);
 
@@ -101,8 +115,15 @@ const getFile = async filePath => {
     return url;
 };
 
-const getMetadata = async ({ sheetId }) =>
-    _fetchData(`/sheets/${sheetId}/metadata`);
+const getMetadata = async ({ sheetId }) => {
+    if (!_isOnline()) {
+        const sheet = JSON.parse(
+            localStorage.getItem(`sheet/${sheetId}`) || '{}'
+        );
+        return sheet.metadata || {};
+    }
+    return _fetchData(`/sheets/${sheetId}/metadata`);
+};
 
 const getMetadataRef = ({ sheetId }) => getRef(`/sheets/${sheetId}/metadata`);
 
@@ -119,6 +140,17 @@ const getNewSheetId = () =>
 const getRef = path => firebase.database().ref(path);
 
 const getSheet = async ({ sheetId }) => {
+    if (!_isOnline()) {
+        const result = localStorage.getItem(`sheet/${sheetId}`);
+        return result
+            ? JSON.parse(result)
+            : {
+                  sheetId,
+                  sheetName: '',
+                  expenses: [],
+                  metadata: {}
+              };
+    }
     // Promises
     const getExpensesPromise = getExpenses({ sheetId });
     const getMetadataPromise = getMetadata({ sheetId });
@@ -129,12 +161,16 @@ const getSheet = async ({ sheetId }) => {
     const metadata = await getMetadataPromise;
     const sheetName = await getSheetNamePromise;
 
-    return {
+    const result = {
         sheetId,
         sheetName,
         expenses,
         metadata
     };
+
+    localStorage.setItem(`sheet/${sheetId}`, JSON.stringify(result));
+
+    return result;
 };
 
 const getSheetName = ({ sheetId }) => _fetchData(`/sheets/${sheetId}/name`);
@@ -176,7 +212,10 @@ const login = async ({ googleProvider }) => {
     }
 };
 
-const logout = () => firebase.auth().signOut();
+const logout = () => {
+    localStorage.clear();
+    firebase.auth().signOut();
+};
 
 const onAuthStateChanged = ({ callback }) =>
     firebase.auth().onAuthStateChanged(callback);
